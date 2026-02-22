@@ -1,0 +1,123 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "CampusPulse",
+      "persona": "The Neo-Academic",
+      "description": "A fusion of Ivy League prestige and Gen-Z digital fluency. Structured, authoritative layouts (Admin) meet vibrant, kinetic event discovery (Student).",
+      "emotional_tone": ["Organized", "Vibrant", "Prestigious", "Connected"]
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Outfit, sans-serif",
+        "body": "Inter, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "imports": [
+        "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
+      ],
+      "rules": [
+        "Headings (h1-h3) must use 'Outfit' with tight tracking (-0.02em).",
+        "Body text must use 'Inter' for maximum legibility.",
+        "Use Uppercase + Wide Tracking for labels (e.g., 'EVENT DATE', 'CATEGORY')."
+      ]
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "name": "Regal Indigo",
+          "hex": "#312E81",
+          "tailwind": "bg-indigo-900 text-white"
+        },
+        "secondary": {
+          "name": "Electric Melon",
+          "hex": "#FB7185",
+          "tailwind": "bg-rose-400 text-white"
+        },
+        "accent": {
+          "name": "Campus Gold",
+          "hex": "#FBBF24",
+          "tailwind": "bg-amber-400 text-black"
+        },
+        "background": {
+          "light": "#FAFAF9",
+          "dark": "#0C0A09",
+          "paper": "#FFFFFF"
+        },
+        "surface": {
+          "light": "#FFFFFF",
+          "dark": "#1C1917"
+        }
+      },
+      "usage": {
+        "admin_dashboard": "High contrast. White backgrounds, dark indigo sidebar, subtle borders.",
+        "student_dashboard": "Card-heavy. Use gradients of Indigo-to-Purple for hero sections. Use 'Electric Melon' for CTAs."
+      }
+    },
+    "layout": {
+      "spacing_scale": "2x",
+      "grid_system": {
+        "student_view": "Bento Grid (Asymmetric). Hero event takes 2x2. Quick actions take 1x1.",
+        "admin_view": "Dense Data Grid. Sidebar fixed (w-64). Main content fluid."
+      },
+      "radius": "rounded-xl",
+      "containers": "Max width 1400px for dashboards, centered."
+    },
+    "components": {
+      "cards": {
+        "style": "Clean, white cards with soft shadow-lg. 1px border-border/40.",
+        "hover": "translate-y-[-4px] transition-transform duration-300 ease-out shadow-xl"
+      },
+      "buttons": {
+        "primary": "rounded-full px-8 py-3 font-semibold bg-indigo-900 hover:bg-indigo-800 text-white shadow-lg shadow-indigo-900/20",
+        "secondary": "rounded-full px-6 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-900"
+      },
+      "navigation": {
+        "sidebar": "Glassmorphism in dark mode, solid academic indigo in light mode."
+      },
+      "charts": {
+        "library": "Recharts",
+        "style": "Minimal axes. Tooltips with rounded-lg and shadow-xl."
+      }
+    },
+    "assets": {
+      "image_urls": {
+        "hero_student_life": "https://images.unsplash.com/photo-1758270705902-f50dde4add9f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHw0fHx1bml2ZXJzaXR5JTIwc3R1ZGVudHMlMjBjYW1wdXMlMjBsaWZlJTIwc29jaWFsfGVufDB8fHx8MTc3MTI2MTgwNHww&ixlib=rb-4.1.0&q=85",
+        "event_lecture": "https://images.unsplash.com/photo-1758270704464-f980b03b9633?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwyfHx1bml2ZXJzaXR5JTIwc3R1ZGVudHMlMjBjYW1wdXMlMjBsaWZlJTIwc29jaWFsfGVufDB8fHx8MTc3MTI2MTgwNHww&ixlib=rb-4.1.0&q=85",
+        "event_social": "https://images.unsplash.com/photo-1758270705657-f28eec1a5694?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHx1bml2ZXJzaXR5JTIwc3R1ZGVudHMlMjBjYW1wdXMlMjBsaWZlJTIwc29jaWFsfGVufDB8fHx8MTc3MTI2MTgwNHww&ixlib=rb-4.1.0&q=85",
+        "event_hackathon": "https://images.unsplash.com/photo-1758270705654-bd043ed13d5d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwzfHx1bml2ZXJzaXR5JTIwc3R1ZGVudHMlMjBjYW1wdXMlMjBsaWZlJTIwc29jaWFsfGVufDB8fHx8MTc3MTI2MTgwNHww&ixlib=rb-4.1.0&q=85"
+      },
+      "icons": "Lucide React (already installed)"
+    },
+    "visual_enhancers": {
+      "glassmorphism": "backdrop-blur-xl bg-white/70 border border-white/20",
+      "gradients": "bg-gradient-to-br from-indigo-50 to-white",
+      "micro_interactions": "All interactive elements must scale slightly (scale-105) on hover."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Theme Strategy: Implement a toggle for 'Academic Mode' (Light) and 'Late Night Mode' (Dark). Default to Light.",
+    "Navigation: Use Role-Based Navigation. Admin gets a Sidebar. Students get a Top Navbar with a 'Mega Menu' for categories.",
+    "Dashboard Logic: The Student Dashboard must look like a 'Streaming Service' for events (Horizontal scroll rows, Hero Banner). The Admin Dashboard must look like a 'Mission Control' (Data density, Charts).",
+    "Forms: Use Shadcn Form components but style them with 'floating labels' or large comfortable inputs.",
+    "Notifications: Use 'Sonner' for toasts. Create a Notification Center dropdown in the header.",
+    "Calendar: Use 'react-day-picker' (installed) styled to match the theme."
+  ],
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur)",
+    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories = main agent will use placeholder text which is FORBIDDEN",
+    "Prioritize using pre-existing components from src/components/ui when applicable",
+    "Components MUST use named exports (export const ComponentName = ...)",
+    "Pages MUST use default exports (export default function PageName() {...})",
+    "Use sonner for toasts"
+  ]
+}
