@@ -137,9 +137,9 @@ export default function AdminDashboard({ user, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex" data-testid="admin-dashboard">
+    <div className="min-h-screen dashboard-shell flex" data-testid="admin-dashboard">
       {/* Sidebar */}
-      <aside className="w-64 bg-indigo-900 text-white min-h-screen fixed left-0 top-0 p-6">
+      <aside className="w-64 sidebar-modern text-white min-h-screen fixed left-0 top-0 p-6">
         <div className="mb-8">
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif' }}>
             CampusPulse
@@ -253,7 +253,7 @@ export default function AdminDashboard({ user, onLogout }) {
             </div>
 
             {/* Recent Events */}
-            <div className="bg-white rounded-xl p-6 border border-gray-100">
+            <div className="dashboard-surface p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
                 Recent Events
               </h3>
@@ -301,7 +301,13 @@ export default function AdminDashboard({ user, onLogout }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {events.map((event) => (
-                <div key={event.id} className="bg-white rounded-xl p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                <div key={event.id} className="dashboard-surface p-6 hover:shadow-lg transition-shadow">
+                  <div
+                    className="event-image-strip mb-4"
+                    style={{
+                      backgroundImage: `url(${event.image_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?crop=entropy&cs=srgb&fm=jpg&q=85'})`,
+                    }}
+                  />
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
@@ -367,7 +373,7 @@ export default function AdminDashboard({ user, onLogout }) {
               <p className="text-gray-600 mt-2">{users.length} registered users</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <div className="dashboard-surface overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
@@ -596,6 +602,17 @@ export default function AdminDashboard({ user, onLogout }) {
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL (Optional)</label>
+                <input
+                  type="url"
+                  value={eventForm.image_url}
+                  onChange={(e) => setEventForm({ ...eventForm, image_url: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                  placeholder="https://example.com/image.jpg"
                 />
               </div>
 

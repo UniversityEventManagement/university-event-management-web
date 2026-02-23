@@ -39,6 +39,7 @@ h1, h2, h3, h4, h5, h6 {
   background: white;
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(15, 23, 42, 0.07);
 }
 
 .event-card::before {
@@ -117,6 +118,42 @@ h1, h2, h3, h4, h5, h6 {
 .stat-card:hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+.dashboard-shell {
+  background:
+    radial-gradient(circle at 5% 5%, rgba(99, 102, 241, 0.12), transparent 30%),
+    radial-gradient(circle at 95% 10%, rgba(251, 113, 133, 0.1), transparent 35%),
+    #f8fafc;
+}
+
+.dashboard-surface {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 20px 35px -25px rgba(15, 23, 42, 0.35);
+}
+
+.sidebar-modern {
+  background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-image-strip {
+  width: 100%;
+  height: 140px;
+  border-radius: 0.9rem;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.event-image-strip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.05));
 }
 
 .sidebar-link {

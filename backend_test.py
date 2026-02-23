@@ -78,7 +78,7 @@ class UniversityEventAPITester:
         """Test login for all user roles"""
         self.print_test_header("AUTHENTICATION TESTS")
         
-        # Test login for all roles
+        # Login for all roles
         credentials = [
             ("admin", "admin@university.edu", "admin123"),
             ("faculty", "faculty@university.edu", "faculty123"),

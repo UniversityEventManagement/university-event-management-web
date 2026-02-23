@@ -190,9 +190,9 @@ export default function FacultyDashboard({ user, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex" data-testid="faculty-dashboard">
+    <div className="min-h-screen dashboard-shell flex" data-testid="faculty-dashboard">
       {/* Sidebar */}
-      <aside className="w-64 bg-indigo-900 text-white min-h-screen fixed left-0 top-0 p-6">
+      <aside className="w-64 sidebar-modern text-white min-h-screen fixed left-0 top-0 p-6">
         <div className="mb-8">
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif' }}>
             CampusPulse
@@ -297,7 +297,7 @@ export default function FacultyDashboard({ user, onLogout }) {
             </div>
 
             {/* Recent Events */}
-            <div className="bg-white rounded-xl p-6 border border-gray-100">
+            <div className="dashboard-surface p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
                 My Recent Events
               </h3>
@@ -362,7 +362,13 @@ export default function FacultyDashboard({ user, onLogout }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {events.map((event) => (
-                <div key={event.id} className="bg-white rounded-xl p-6 border border-gray-100 hover:shadow-lg transition-shadow">
+                <div key={event.id} className="dashboard-surface p-6 hover:shadow-lg transition-shadow">
+                  <div
+                    className="event-image-strip mb-4"
+                    style={{
+                      backgroundImage: `url(${event.image_url || 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?crop=entropy&cs=srgb&fm=jpg&q=85'})`,
+                    }}
+                  />
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
@@ -451,7 +457,13 @@ export default function FacultyDashboard({ user, onLogout }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {allEvents.map((event) => (
-                <div key={event.id} className="bg-white rounded-xl p-6 border border-gray-100">
+                <div key={event.id} className="dashboard-surface p-6">
+                  <div
+                    className="event-image-strip mb-4"
+                    style={{
+                      backgroundImage: `url(${event.image_url || 'https://images.unsplash.com/photo-1511578314322-379afb476865?crop=entropy&cs=srgb&fm=jpg&q=85'})`,
+                    }}
+                  />
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
@@ -616,6 +628,17 @@ export default function FacultyDashboard({ user, onLogout }) {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL (Optional)</label>
+                <input
+                  type="url"
+                  value={eventForm.image_url}
+                  onChange={(e) => setEventForm({ ...eventForm, image_url: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
               <button type="submit" data-testid="submit-create-event" className="w-full btn-primary py-4 mt-6">
                 Create Event
               </button>
@@ -655,6 +678,17 @@ export default function FacultyDashboard({ user, onLogout }) {
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL (Optional)</label>
+                <input
+                  type="url"
+                  value={eventForm.image_url}
+                  onChange={(e) => setEventForm({ ...eventForm, image_url: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                  placeholder="https://example.com/image.jpg"
                 />
               </div>
 
