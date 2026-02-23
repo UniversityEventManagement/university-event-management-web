@@ -156,6 +156,32 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(to top, rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.05));
 }
 
+.countdown-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #3730a3;
+  background: #e0e7ff;
+}
+
+.trending-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #9f1239;
+  background: #ffe4e6;
+}
+
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -259,6 +285,16 @@ h1, h2, h3, h4, h5, h6 {
 .dark .text-gray-500,
 .dark .text-gray-400 {
   color: #9ca3af !important;
+}
+
+.dark .countdown-chip {
+  color: #c7d2fe;
+  background: rgba(67, 56, 202, 0.35);
+}
+
+.dark .trending-chip {
+  color: #fecdd3;
+  background: rgba(190, 24, 93, 0.35);
 }
 
 .dark .border-gray-100,

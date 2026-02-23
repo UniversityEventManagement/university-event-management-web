@@ -15,6 +15,8 @@ import {
   Trophy,
   Star,
   Sparkles,
+  Link,
+  Share2,
 } from 'lucide-react';
 import { api } from '../utils/api';
 
@@ -200,6 +202,46 @@ export default function StudentDashboard({ user, onLogout }) {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const categories = ['all', 'seminar', 'workshop', 'cultural', 'sports', 'technical', 'other'];
+
+  const getEventCountdown = (date, time) => {
+    const parsed = new Date(`${date}T${time || '00:00'}`);
+    if (Number.isNaN(parsed.getTime())) return '';
+    const diffMs = parsed.getTime() - Date.now();
+    if (diffMs <= 0) return 'Live / Completed';
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+    if (diffDays > 0) return `${diffDays}d ${diffHours}h left`;
+    const diffMins = Math.floor((diffMs / (1000 * 60)) % 60);
+    return `${diffHours}h ${diffMins}m left`;
+  };
+
+  const handleCopyEventLink = async (eventId) => {
+    try {
+      const eventLink = `${window.location.origin}/?event=${eventId}`;
+      await navigator.clipboard.writeText(eventLink);
+      toast.success('Event link copied');
+    } catch (error) {
+      toast.error('Failed to copy event link');
+    }
+  };
+
+  const handleAddToCalendar = (event) => {
+    const toUtcStamp = (date, time) => {
+      const parsed = new Date(`${date}T${time || '00:00'}`);
+      return parsed.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const start = toUtcStamp(event.date, event.time);
+    const endDate = new Date(`${event.date}T${event.time || '00:00'}`);
+    endDate.setHours(endDate.getHours() + 2);
+    const end = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+    const title = encodeURIComponent(event.title);
+    const details = encodeURIComponent(event.description || 'University event');
+    const location = encodeURIComponent(event.venue || 'Campus');
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+    window.open(url, '_blank');
+  };
 
   if (loading) {
     return (
@@ -427,6 +469,15 @@ export default function StudentDashboard({ user, onLogout }) {
                       <h3 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
                         {event.title}
                       </h3>
+                      <div className="mb-3 flex items-center gap-2 flex-wrap">
+                        <span className="countdown-chip">{getEventCountdown(event.date, event.time)}</span>
+                        {event.registered_count >= Math.max(10, Math.floor(event.max_participants * 0.6)) && (
+                          <span className="trending-chip">
+                            <Sparkles className="w-3 h-3" />
+                            Trending
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-600 mb-4 line-clamp-2">{event.description}</p>
 
                       <div className="space-y-2 mb-4">
@@ -448,6 +499,30 @@ export default function StudentDashboard({ user, onLogout }) {
                             {event.registered_count}/{event.max_participants} registered
                           </span>
                         </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 mb-4">
+                        <button
+                          onClick={() => handleAddToCalendar(event)}
+                          className="flex-1 px-3 py-2 rounded-lg border border-indigo-100 text-indigo-800 bg-indigo-50 hover:bg-indigo-100 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                        >
+                          <Calendar className="w-4 h-4" />
+                          Add to Calendar
+                        </button>
+                        <button
+                          onClick={() => handleCopyEventLink(event.id)}
+                          className="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                          title="Copy event link"
+                        >
+                          <Link className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleCopyEventLink(event.id)}
+                          className="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                          title="Share event"
+                        >
+                          <Share2 className="w-4 h-4" />
+                        </button>
                       </div>
 
                       {isRegistered(event.id) ? (
