@@ -4,15 +4,18 @@ import {
   LayoutDashboard,
   Calendar,
   Users,
+  BookOpen,
   Plus,
   LogOut,
   Edit2,
   Trash2,
   TrendingUp,
   CheckCircle,
+  Sparkles,
   X
 } from 'lucide-react';
 import { api, cachedGet, clearApiCache } from '../utils/api';
+import { getInstructors, getPrograms, saveInstructors, savePrograms } from '@/utils/contentStore';
 
 export default function AdminDashboard({ user, onLogout }) {
   const [activeView, setActiveView] = useState('dashboard');
@@ -23,6 +26,24 @@ export default function AdminDashboard({ user, onLogout }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [programs, setPrograms] = useState(() => getPrograms());
+  const [instructors, setInstructors] = useState(() => getInstructors());
+  const [programForm, setProgramForm] = useState({
+    title: '',
+    level: 'Beginner',
+    dept: 'CSE',
+    seats: 60,
+    duration: '8 Weeks',
+    summary: '',
+    image: '',
+  });
+  const [instructorForm, setInstructorForm] = useState({
+    name: '',
+    dept: 'CSE',
+    expertise: '',
+    rating: 4.7,
+    image: '',
+  });
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -38,6 +59,11 @@ export default function AdminDashboard({ user, onLogout }) {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    setPrograms(getPrograms());
+    setInstructors(getInstructors());
   }, []);
 
   const fetchData = async () => {
@@ -131,6 +157,54 @@ export default function AdminDashboard({ user, onLogout }) {
     setSelectedEvent(null);
   };
 
+  const addProgram = (e) => {
+    e.preventDefault();
+    if (!programForm.title.trim()) return toast.error('Program title is required');
+    const next = [{ id: `prog-${Date.now()}`, ...programForm }, ...programs];
+    setPrograms(next);
+    savePrograms(next);
+    setProgramForm({
+      title: '',
+      level: 'Beginner',
+      dept: 'CSE',
+      seats: 60,
+      duration: '8 Weeks',
+      summary: '',
+      image: '',
+    });
+    toast.success('Program added');
+  };
+
+  const removeProgram = (id) => {
+    const next = programs.filter((program) => program.id !== id);
+    setPrograms(next);
+    savePrograms(next);
+    toast.success('Program removed');
+  };
+
+  const addInstructor = (e) => {
+    e.preventDefault();
+    if (!instructorForm.name.trim()) return toast.error('Instructor name is required');
+    const next = [{ id: `ins-${Date.now()}`, ...instructorForm }, ...instructors];
+    setInstructors(next);
+    saveInstructors(next);
+    setInstructorForm({
+      name: '',
+      dept: 'CSE',
+      expertise: '',
+      rating: 4.7,
+      image: '',
+    });
+    toast.success('Instructor added');
+  };
+
+  const removeInstructor = (id) => {
+    const next = instructors.filter((ins) => ins.id !== id);
+    setInstructors(next);
+    saveInstructors(next);
+    toast.success('Instructor removed');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
@@ -183,6 +257,16 @@ export default function AdminDashboard({ user, onLogout }) {
             <Users className="w-5 h-5" />
             <span className="font-medium">Users</span>
           </button>
+
+          <button
+            onClick={() => setActiveView('content')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activeView === 'content' ? 'bg-white text-indigo-900' : 'text-white hover:bg-indigo-800'
+            }`}
+          >
+            <BookOpen className="w-5 h-5" />
+            <span className="font-medium">Content</span>
+          </button>
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6">
@@ -218,7 +302,7 @@ export default function AdminDashboard({ user, onLogout }) {
               Logout
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               onClick={() => setActiveView('dashboard')}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -242,6 +326,14 @@ export default function AdminDashboard({ user, onLogout }) {
               }`}
             >
               Users
+            </button>
+            <button
+              onClick={() => setActiveView('content')}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'content' ? 'bg-indigo-900 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              Content
             </button>
           </div>
         </div>
@@ -456,6 +548,162 @@ export default function AdminDashboard({ user, onLogout }) {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Content View */}
+        {activeView === 'content' && (
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                Content Management
+              </h2>
+              <p className="text-gray-600 mt-2">Add instructors and AI-focused programs for the public website.</p>
+            </div>
+
+            <div className="grid xl:grid-cols-2 gap-6">
+              <section className="dashboard-surface p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-indigo-900" />
+                  <h3 className="text-xl font-bold text-gray-900">Add AI Program</h3>
+                </div>
+                <form onSubmit={addProgram} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    value={programForm.title}
+                    onChange={(e) => setProgramForm({ ...programForm, title: e.target.value })}
+                    placeholder="Program title"
+                    className="sm:col-span-2 px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <select
+                    value={programForm.level}
+                    onChange={(e) => setProgramForm({ ...programForm, level: e.target.value })}
+                    className="px-3 py-2 rounded-lg border border-gray-200"
+                  >
+                    <option>Beginner</option>
+                    <option>Intermediate</option>
+                    <option>Advanced</option>
+                    <option>All Levels</option>
+                  </select>
+                  <input
+                    value={programForm.dept}
+                    onChange={(e) => setProgramForm({ ...programForm, dept: e.target.value })}
+                    placeholder="Department"
+                    className="px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    value={programForm.seats}
+                    onChange={(e) => setProgramForm({ ...programForm, seats: Number(e.target.value) })}
+                    placeholder="Seats"
+                    className="px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <input
+                    value={programForm.duration}
+                    onChange={(e) => setProgramForm({ ...programForm, duration: e.target.value })}
+                    placeholder="Duration"
+                    className="px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <textarea
+                    value={programForm.summary}
+                    onChange={(e) => setProgramForm({ ...programForm, summary: e.target.value })}
+                    placeholder="Summary"
+                    className="sm:col-span-2 px-3 py-2 rounded-lg border border-gray-200 min-h-20"
+                  />
+                  <input
+                    value={programForm.image}
+                    onChange={(e) => setProgramForm({ ...programForm, image: e.target.value })}
+                    placeholder="Image URL"
+                    className="sm:col-span-2 px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <button type="submit" className="sm:col-span-2 px-4 py-2 rounded-lg bg-indigo-900 text-white font-semibold hover:bg-indigo-800">
+                    Save Program
+                  </button>
+                </form>
+              </section>
+
+              <section className="dashboard-surface p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Users className="w-5 h-5 text-indigo-900" />
+                  <h3 className="text-xl font-bold text-gray-900">Add Instructor</h3>
+                </div>
+                <form onSubmit={addInstructor} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    value={instructorForm.name}
+                    onChange={(e) => setInstructorForm({ ...instructorForm, name: e.target.value })}
+                    placeholder="Instructor name"
+                    className="sm:col-span-2 px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <input
+                    value={instructorForm.dept}
+                    onChange={(e) => setInstructorForm({ ...instructorForm, dept: e.target.value })}
+                    placeholder="Department"
+                    className="px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    step="0.1"
+                    value={instructorForm.rating}
+                    onChange={(e) => setInstructorForm({ ...instructorForm, rating: Number(e.target.value) })}
+                    placeholder="Rating"
+                    className="px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <textarea
+                    value={instructorForm.expertise}
+                    onChange={(e) => setInstructorForm({ ...instructorForm, expertise: e.target.value })}
+                    placeholder="Expertise"
+                    className="sm:col-span-2 px-3 py-2 rounded-lg border border-gray-200 min-h-20"
+                  />
+                  <input
+                    value={instructorForm.image}
+                    onChange={(e) => setInstructorForm({ ...instructorForm, image: e.target.value })}
+                    placeholder="Profile image URL"
+                    className="sm:col-span-2 px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <button type="submit" className="sm:col-span-2 px-4 py-2 rounded-lg bg-indigo-900 text-white font-semibold hover:bg-indigo-800">
+                    Save Instructor
+                  </button>
+                </form>
+              </section>
+            </div>
+
+            <div className="grid xl:grid-cols-2 gap-6">
+              <section className="dashboard-surface p-5">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Published Programs</h3>
+                <div className="space-y-2 max-h-80 overflow-y-auto scroll-container">
+                  {programs.map((program) => (
+                    <div key={program.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
+                      <div>
+                        <p className="font-semibold text-gray-900">{program.title}</p>
+                        <p className="text-xs text-gray-600">{program.level} • {program.dept}</p>
+                      </div>
+                      <button onClick={() => removeProgram(program.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="dashboard-surface p-5">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Published Instructors</h3>
+                <div className="space-y-2 max-h-80 overflow-y-auto scroll-container">
+                  {instructors.map((ins) => (
+                    <div key={ins.id} className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
+                      <div>
+                        <p className="font-semibold text-gray-900">{ins.name}</p>
+                        <p className="text-xs text-gray-600">{ins.dept} • {ins.expertise}</p>
+                      </div>
+                      <button onClick={() => removeInstructor(ins.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
           </div>
         )}
