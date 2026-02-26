@@ -1,0 +1,10 @@
+{
+  "short_name": "CampusHub",
+  "name": "CampusHub University Event Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#312E81",
+  "description": "CampusHub helps students, faculty, and admins manage campus events across devices.",
+  "icons": []
+}

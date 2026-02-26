@@ -1,12 +1,34 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { Moon, Sun } from 'lucide-react';
-import Login from './pages/Login';
-import AdminDashboard from './pages/AdminDashboard';
-import StudentDashboard from './pages/StudentDashboard';
-import FacultyDashboard from './pages/FacultyDashboard';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import '@/App.css';
+
+const Login = lazy(() => import('./pages/Login'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
+const FacultyDashboard = lazy(() => import('./pages/FacultyDashboard'));
+
+function AppLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-stone-50">
+      <div className="animate-pulse text-indigo-900 font-semibold text-xl">Loading...</div>
+    </div>
+  );
+}
+
+function RouteTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (window.posthog?.capture) {
+      window.posthog.capture('page_view', { path: location.pathname });
+    }
+  }, [location.pathname]);
+
+  return null;
+}
 
 function App() {
   const [user, setUser] = useState(null);
@@ -16,8 +38,13 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    if (token && userData) {
-      setUser(JSON.parse(userData));
+    if (token && userData?.length) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
     setLoading(false);
   }, []);
@@ -31,6 +58,35 @@ function App() {
     }
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    const onError = (event) => {
+      if (window.posthog?.capture) {
+        window.posthog.capture('ui_error', {
+          message: event.message,
+          source: event.filename,
+          line: event.lineno,
+          column: event.colno,
+        });
+      }
+    };
+
+    const onRejection = (event) => {
+      if (window.posthog?.capture) {
+        window.posthog.capture('unhandled_rejection', {
+          reason: String(event.reason || 'unknown'),
+        });
+      }
+    };
+
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onRejection);
+
+    return () => {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onRejection);
+    };
+  }, []);
 
   const handleLogin = (token, userData) => {
     localStorage.setItem('token', token);
@@ -48,50 +104,50 @@ function App() {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50">
-        <div className="animate-pulse text-indigo-900 font-semibold text-xl">Loading...</div>
-      </div>
-    );
-  }
+  if (loading) return <AppLoader />;
 
   return (
-    <div className="App">
-      <button
-        onClick={toggleTheme}
-        className="theme-toggle-btn"
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-      >
-        {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-        <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
-      </button>
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/login"
-            element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/" />}
-          />
-          <Route
-            path="/"
-            element={
-              user ? (
-                user.role === 'admin' ? (
-                  <AdminDashboard user={user} onLogout={handleLogout} />
-                ) : user.role === 'faculty' ? (
-                  <FacultyDashboard user={user} onLogout={handleLogout} />
-                ) : (
-                  <StudentDashboard user={user} onLogout={handleLogout} />
-                )
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-      <Toaster position="top-right" />
-    </div>
+    <ErrorBoundary>
+      <div className="App">
+        <a href="#main-content" className="skip-link">Skip to content</a>
+        <BrowserRouter>
+          <RouteTracker />
+          <Suspense fallback={<AppLoader />}>
+            <Routes>
+              <Route
+                path="/login"
+                element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/" />}
+              />
+              <Route
+                path="/"
+                element={
+                  user ? (
+                    user.role === 'admin' ? (
+                      <AdminDashboard user={user} onLogout={handleLogout} />
+                    ) : user.role === 'faculty' ? (
+                      <FacultyDashboard user={user} onLogout={handleLogout} />
+                    ) : (
+                      <StudentDashboard user={user} onLogout={handleLogout} />
+                    )
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
+              />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+        <button
+          onClick={toggleTheme}
+          className="theme-toggle-btn"
+          aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
+        </button>
+        <Toaster position="top-right" />
+      </div>
+    </ErrorBoundary>
   );
 }
 

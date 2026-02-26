@@ -16,8 +16,35 @@ export default function Login({ onLogin }) {
   });
   const [loading, setLoading] = useState(false);
 
+  const validateForm = () => {
+    if (!formData.email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+
+    if ((formData.password || '').length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return false;
+    }
+
+    if (!isLogin) {
+      if ((formData.name || '').trim().length < 2) {
+        toast.error('Please enter your full name');
+        return false;
+      }
+
+      if (formData.role === 'student' && (formData.student_id || '').trim().length < 2) {
+        toast.error('Please enter a valid student ID');
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setLoading(true);
 
     try {
@@ -55,15 +82,15 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-rose-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-rose-50 flex items-center justify-center p-3 sm:p-4 lg:p-8">
+      <main id="main-content" className="w-full max-w-7xl grid xl:grid-cols-2 gap-6 xl:gap-12 items-center">
         {/* Left Side - Hero Section */}
-        <div className="hidden lg:block space-y-8 animate-fade-in">
+        <div className="hidden xl:block space-y-8 animate-fade-in">
           <div>
-            <h1 className="text-6xl font-bold text-indigo-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              CampusPulse
+            <h1 className="text-5xl 2xl:text-6xl font-bold text-indigo-900 mb-4" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              CampusHub
             </h1>
-            <p className="text-2xl text-gray-600 mb-8">
+            <p className="text-xl 2xl:text-2xl text-gray-600 mb-8">
               University Event Management System
             </p>
           </div>
@@ -112,10 +139,10 @@ export default function Login({ onLogin }) {
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full max-w-md mx-auto">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+        <div className="w-full max-w-md lg:max-w-lg mx-auto">
+          <div className="bg-white rounded-2xl shadow-2xl p-5 sm:p-8 2xl:p-10 border border-gray-100">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              <h2 className="text-2xl sm:text-3xl 2xl:text-4xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
                 {isLogin ? 'Welcome Back' : 'Create Account'}
               </h2>
               <p className="text-gray-600">
@@ -183,25 +210,34 @@ export default function Login({ onLogin }) {
                 </div>
               )}
 
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  autoComplete="email"
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+              </div>
 
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  minLength={6}
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                />
+              </div>
 
               <button
                 type="submit"
@@ -223,7 +259,7 @@ export default function Login({ onLogin }) {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

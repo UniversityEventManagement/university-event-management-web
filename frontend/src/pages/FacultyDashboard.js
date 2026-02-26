@@ -14,7 +14,7 @@ import {
   X,
   UserCheck
 } from 'lucide-react';
-import { api } from '../utils/api';
+import { api, cachedGet, clearApiCache } from '../utils/api';
 
 export default function FacultyDashboard({ user, onLogout }) {
   const [activeView, setActiveView] = useState('dashboard');
@@ -48,16 +48,16 @@ export default function FacultyDashboard({ user, onLogout }) {
 
   const fetchData = async () => {
     try {
-      const [eventsRes, statsRes] = await Promise.all([
-        api.get('/events'),
-        api.get('/dashboard/stats'),
+      const [eventsData, statsData] = await Promise.all([
+        cachedGet('/events'),
+        cachedGet('/dashboard/stats'),
       ]);
       
       // Filter events created by this faculty
-      const myEvents = eventsRes.data.filter(e => e.created_by === user.id);
+      const myEvents = eventsData.filter(e => e.created_by === user.id);
       setEvents(myEvents);
-      setAllEvents(eventsRes.data);
-      setStats(statsRes.data);
+      setAllEvents(eventsData);
+      setStats(statsData);
     } catch (error) {
       toast.error('Failed to load data');
     } finally {
@@ -72,6 +72,7 @@ export default function FacultyDashboard({ user, onLogout }) {
       toast.success('Event created successfully!');
       setShowCreateModal(false);
       resetForm();
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create event');
@@ -85,6 +86,7 @@ export default function FacultyDashboard({ user, onLogout }) {
       toast.success('Event updated successfully!');
       setShowEditModal(false);
       resetForm();
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error('Failed to update event');
@@ -97,6 +99,7 @@ export default function FacultyDashboard({ user, onLogout }) {
     try {
       await api.delete(`/events/${eventId}`);
       toast.success('Event deleted');
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error('You can only delete your own events');
@@ -190,12 +193,12 @@ export default function FacultyDashboard({ user, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen dashboard-shell flex" data-testid="faculty-dashboard">
+    <div className="min-h-screen dashboard-shell lg:flex" data-testid="faculty-dashboard">
       {/* Sidebar */}
-      <aside className="w-64 sidebar-modern text-white min-h-screen fixed left-0 top-0 p-6">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 sidebar-modern text-white lg:min-h-screen lg:fixed lg:left-0 lg:top-0 p-6">
         <div className="mb-8">
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            CampusPulse
+            CampusHub
           </h1>
           <p className="text-indigo-300 text-sm mt-1">Faculty Panel</p>
         </div>
@@ -253,7 +256,48 @@ export default function FacultyDashboard({ user, onLogout }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-8">
+      <main id="main-content" className="w-full lg:flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8">
+        <div className="lg:hidden bg-white rounded-xl border border-gray-100 p-4 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm text-gray-500">Faculty Panel</p>
+              <p className="font-semibold text-gray-900">{user.name}</p>
+            </div>
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-indigo-900"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={() => setActiveView('dashboard')}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'dashboard' ? 'bg-indigo-900 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveView('events')}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'events' ? 'bg-indigo-900 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              My Events
+            </button>
+            <button
+              onClick={() => setActiveView('all-events')}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'all-events' ? 'bg-indigo-900 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              All Events
+            </button>
+          </div>
+        </div>
         {/* Dashboard View */}
         {activeView === 'dashboard' && stats && (
           <div className="space-y-8">

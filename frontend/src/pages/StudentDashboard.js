@@ -18,7 +18,7 @@ import {
   Link,
   Share2,
 } from 'lucide-react';
-import { api } from '../utils/api';
+import { api, cachedGet, clearApiCache } from '../utils/api';
 
 const INTEREST_OPTIONS = ['seminar', 'workshop', 'cultural', 'sports', 'technical', 'career', 'startup'];
 
@@ -45,21 +45,21 @@ export default function StudentDashboard({ user, onLogout }) {
 
   const fetchData = async () => {
     try {
-      const [eventsRes, regsRes, notifsRes, statsRes, meRes, leaderboardRes] = await Promise.all([
-        api.get('/events/recommended'),
-        api.get('/registrations/my'),
-        api.get('/notifications'),
-        api.get('/dashboard/stats'),
-        api.get('/auth/me'),
-        api.get('/leaderboard?limit=5'),
+      const [eventsData, regsData, notifsData, statsData, meData, leaderboardData] = await Promise.all([
+        cachedGet('/events/recommended'),
+        cachedGet('/registrations/my'),
+        cachedGet('/notifications'),
+        cachedGet('/dashboard/stats'),
+        cachedGet('/auth/me'),
+        cachedGet('/leaderboard', { params: { limit: 5 } }),
       ]);
-      setEvents(eventsRes.data);
-      setMyRegistrations(regsRes.data);
-      setNotifications(notifsRes.data);
-      setStats(statsRes.data);
-      setProfile(meRes.data);
-      setInterests(meRes.data.interests || []);
-      setLeaderboard(leaderboardRes.data);
+      setEvents(eventsData);
+      setMyRegistrations(regsData);
+      setNotifications(notifsData);
+      setStats(statsData);
+      setProfile(meData);
+      setInterests(meData.interests || []);
+      setLeaderboard(leaderboardData);
     } catch (error) {
       toast.error('Failed to load dashboard data');
     } finally {
@@ -71,6 +71,7 @@ export default function StudentDashboard({ user, onLogout }) {
     try {
       await api.post('/registrations', { event_id: eventId });
       toast.success('Successfully registered for event! +10 points');
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Registration failed');
@@ -86,6 +87,7 @@ export default function StudentDashboard({ user, onLogout }) {
       await api.post(`/registrations/invite/${inviteCode.trim()}`);
       toast.success('Joined event with invite code');
       setInviteCode('');
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Invalid invite code');
@@ -112,6 +114,7 @@ export default function StudentDashboard({ user, onLogout }) {
       await api.post('/registrations/checkin', { code: checkInCode.trim().toUpperCase() });
       toast.success('Check-in successful! +20 points');
       setCheckInCode('');
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Check-in failed');
@@ -136,6 +139,7 @@ export default function StudentDashboard({ user, onLogout }) {
         const names = suggested.map((e) => e.title).join(', ');
         toast.message(`Recommended next: ${names}`);
       }
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Feedback failed');
@@ -146,6 +150,7 @@ export default function StudentDashboard({ user, onLogout }) {
     try {
       await api.delete(`/registrations/${registrationId}`);
       toast.success('Registration cancelled');
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error('Failed to cancel registration');
@@ -156,6 +161,7 @@ export default function StudentDashboard({ user, onLogout }) {
     try {
       await api.put('/users/interests', { interests });
       toast.success('Interests updated');
+      clearApiCache();
       fetchData();
     } catch (error) {
       toast.error('Failed to save interests');
@@ -171,6 +177,7 @@ export default function StudentDashboard({ user, onLogout }) {
   const markNotificationRead = async (notifId) => {
     try {
       await api.put(`/notifications/${notifId}/read`);
+      clearApiCache();
       fetchData();
     } catch (error) {
       console.error('Failed to mark as read');
@@ -180,6 +187,7 @@ export default function StudentDashboard({ user, onLogout }) {
   const markAllRead = async () => {
     try {
       await api.put('/notifications/read-all');
+      clearApiCache();
       fetchData();
     } catch (error) {
       console.error('Failed to mark all as read');
@@ -255,14 +263,14 @@ export default function StudentDashboard({ user, onLogout }) {
     <div className="min-h-screen dashboard-shell" data-testid="student-dashboard">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold gradient-text" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                CampusPulse
+              <h1 className="text-2xl sm:text-3xl font-bold gradient-text" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                CampusHub
               </h1>
               <p className="text-sm text-gray-600 mt-1">Welcome back, {profile.name}</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
               <div className="px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg">
                 <div className="flex items-center gap-2 text-amber-700">
                   <Trophy className="w-4 h-4" />
@@ -284,7 +292,7 @@ export default function StudentDashboard({ user, onLogout }) {
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
                     <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                       <h3 className="font-semibold text-gray-900">Notifications</h3>
                       {unreadCount > 0 && (
@@ -321,7 +329,7 @@ export default function StudentDashboard({ user, onLogout }) {
             </div>
           </div>
 
-          <div className="flex gap-6 mt-6">
+          <div className="flex gap-4 sm:gap-6 mt-6 overflow-x-auto">
             <button
               onClick={() => setActiveTab('explore')}
               className={`pb-3 px-2 font-semibold transition-all relative ${activeTab === 'explore' ? 'text-indigo-900' : 'text-gray-500 hover:text-gray-700'}`}
@@ -340,7 +348,7 @@ export default function StudentDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="stat-card">
             <div className="flex items-center justify-between">
