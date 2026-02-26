@@ -9,6 +9,15 @@ const Login = lazy(() => import('./pages/Login'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const StudentDashboard = lazy(() => import('./pages/StudentDashboard'));
 const FacultyDashboard = lazy(() => import('./pages/FacultyDashboard'));
+const PublicLayout = lazy(() => import('./components/PublicLayout'));
+const HomePage = lazy(() => import('./pages/public/HomePage'));
+const AboutPage = lazy(() => import('./pages/public/AboutPage'));
+const ProgramsPage = lazy(() => import('./pages/public/ProgramsPage'));
+const InstructorsPage = lazy(() => import('./pages/public/InstructorsPage'));
+const TimetablePage = lazy(() => import('./pages/public/TimetablePage'));
+const LearningCenterPage = lazy(() => import('./pages/public/LearningCenterPage'));
+const ContactPage = lazy(() => import('./pages/public/ContactPage'));
+const FaqPage = lazy(() => import('./pages/public/FaqPage'));
 
 function AppLoader() {
   return (
@@ -28,6 +37,14 @@ function RouteTracker() {
   }, [location.pathname]);
 
   return null;
+}
+
+function DashboardRoute({ user, onLogout }) {
+  if (!user) return <Navigate to="/login" />;
+
+  if (user.role === 'admin') return <AdminDashboard user={user} onLogout={onLogout} />;
+  if (user.role === 'faculty') return <FacultyDashboard user={user} onLogout={onLogout} />;
+  return <StudentDashboard user={user} onLogout={onLogout} />;
 }
 
 function App() {
@@ -114,26 +131,25 @@ function App() {
           <RouteTracker />
           <Suspense fallback={<AppLoader />}>
             <Routes>
+              <Route element={<PublicLayout user={user} />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/programs" element={<ProgramsPage />} />
+                <Route path="/instructors" element={<InstructorsPage />} />
+                <Route path="/timetable" element={<TimetablePage />} />
+                <Route path="/learning" element={<LearningCenterPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/faq" element={<FaqPage />} />
+              </Route>
               <Route
                 path="/login"
-                element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/" />}
+                element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/app" />}
               />
               <Route
-                path="/"
-                element={
-                  user ? (
-                    user.role === 'admin' ? (
-                      <AdminDashboard user={user} onLogout={handleLogout} />
-                    ) : user.role === 'faculty' ? (
-                      <FacultyDashboard user={user} onLogout={handleLogout} />
-                    ) : (
-                      <StudentDashboard user={user} onLogout={handleLogout} />
-                    )
-                  ) : (
-                    <Navigate to="/login" />
-                  )
-                }
+                path="/app"
+                element={<DashboardRoute user={user} onLogout={handleLogout} />}
               />
+              <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </Suspense>
         </BrowserRouter>

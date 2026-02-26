@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Calendar, Users, BookOpen, Award } from 'lucide-react';
-import { api } from '@/utils/api';
+import { API_URL, api } from '@/utils/api';
 
 
 export default function Login({ onLogin }) {
@@ -79,6 +79,10 @@ export default function Login({ onLogin }) {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSocialLogin = (provider) => {
+    window.location.href = `${API_URL}/auth/${provider}`;
   };
 
   return (
@@ -246,6 +250,31 @@ export default function Login({ onLogin }) {
               >
                 {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
               </button>
+
+              {isLogin && (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <div className="h-px bg-gray-200" />
+                    <p className="absolute inset-x-0 -top-3 text-center text-xs text-gray-500 bg-white w-28 mx-auto">or continue with</p>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSocialLogin('google')}
+                      className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                    >
+                      Google
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSocialLogin('microsoft')}
+                      className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                    >
+                      Microsoft
+                    </button>
+                  </div>
+                </div>
+              )}
             </form>
 
             <div className="mt-6 text-center">
