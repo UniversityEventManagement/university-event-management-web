@@ -82,7 +82,7 @@ export default function PublicLayout({ user }) {
         )}
       </header>
 
-      <Outlet />
+      <Outlet context={{ user }} />
 
       <footer className="mt-14 border-t border-gray-200 bg-white/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
