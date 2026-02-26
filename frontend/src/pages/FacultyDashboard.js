@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import {
   LayoutDashboard,
   Calendar,
+  Clock3,
   Users,
   Plus,
   LogOut,
@@ -15,6 +16,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { api, cachedGet, clearApiCache } from '../utils/api';
+import TimetableManager from '@/components/TimetableManager';
 
 export default function FacultyDashboard({ user, onLogout }) {
   const [activeView, setActiveView] = useState('dashboard');
@@ -236,6 +238,16 @@ export default function FacultyDashboard({ user, onLogout }) {
             <Users className="w-5 h-5" />
             <span className="font-medium">All Events</span>
           </button>
+
+          <button
+            onClick={() => setActiveView('timetable')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activeView === 'timetable' ? 'bg-white text-indigo-900' : 'text-white hover:bg-indigo-800'
+            }`}
+          >
+            <Clock3 className="w-5 h-5" />
+            <span className="font-medium">Timetable</span>
+          </button>
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6">
@@ -271,7 +283,7 @@ export default function FacultyDashboard({ user, onLogout }) {
               Logout
             </button>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               onClick={() => setActiveView('dashboard')}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -295,6 +307,14 @@ export default function FacultyDashboard({ user, onLogout }) {
               }`}
             >
               All Events
+            </button>
+            <button
+              onClick={() => setActiveView('timetable')}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'timetable' ? 'bg-indigo-900 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              Timetable
             </button>
           </div>
         </div>
@@ -544,6 +564,18 @@ export default function FacultyDashboard({ user, onLogout }) {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {activeView === 'timetable' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                Timetable Management
+              </h2>
+              <p className="text-gray-600 mt-2">Manage timetable slots from faculty panel. Public timetable updates automatically.</p>
+            </div>
+            <TimetableManager canEdit />
           </div>
         )}
       </main>

@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import {
   LayoutDashboard,
   Calendar,
+  Clock3,
   Users,
   BookOpen,
   Plus,
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 import { api, cachedGet, clearApiCache } from '../utils/api';
 import { getInstructors, getPrograms, saveInstructors, savePrograms } from '@/utils/contentStore';
+import TimetableManager from '@/components/TimetableManager';
 
 export default function AdminDashboard({ user, onLogout }) {
   const [activeView, setActiveView] = useState('dashboard');
@@ -267,6 +269,16 @@ export default function AdminDashboard({ user, onLogout }) {
             <BookOpen className="w-5 h-5" />
             <span className="font-medium">Content</span>
           </button>
+
+          <button
+            onClick={() => setActiveView('timetable')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activeView === 'timetable' ? 'bg-white text-indigo-900' : 'text-white hover:bg-indigo-800'
+            }`}
+          >
+            <Clock3 className="w-5 h-5" />
+            <span className="font-medium">Timetable</span>
+          </button>
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6">
@@ -302,7 +314,7 @@ export default function AdminDashboard({ user, onLogout }) {
               Logout
             </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <button
               onClick={() => setActiveView('dashboard')}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -334,6 +346,14 @@ export default function AdminDashboard({ user, onLogout }) {
               }`}
             >
               Content
+            </button>
+            <button
+              onClick={() => setActiveView('timetable')}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'timetable' ? 'bg-indigo-900 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              Timetable
             </button>
           </div>
         </div>
@@ -705,6 +725,18 @@ export default function AdminDashboard({ user, onLogout }) {
                 </div>
               </section>
             </div>
+          </div>
+        )}
+
+        {activeView === 'timetable' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                Timetable Management
+              </h2>
+              <p className="text-gray-600 mt-2">Update weekly timetable here. Changes appear automatically on public timetable page.</p>
+            </div>
+            <TimetableManager canEdit />
           </div>
         )}
       </main>
