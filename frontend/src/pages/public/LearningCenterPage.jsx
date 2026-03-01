@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const courseData = [
@@ -34,28 +35,39 @@ const courseData = [
   },
 ];
 
-const storageKey = 'campushub_learning_state_v1';
-
-function readState() {
+function readState(key) {
   try {
-    return JSON.parse(localStorage.getItem(storageKey) || '{}');
+    return JSON.parse(localStorage.getItem(key) || '{}');
   } catch {
     return {};
   }
 }
 
-function writeState(next) {
-  localStorage.setItem(storageKey, JSON.stringify(next));
+function writeState(key, next) {
+  localStorage.setItem(key, JSON.stringify(next));
 }
 
 export default function LearningCenterPage() {
+  const { user } = useOutletContext() || {};
+  const isStudent = user?.role === 'student';
+  const isFacultyOrAdmin = user?.role === 'faculty' || user?.role === 'admin';
+  const learnerStorageKey = `campushub_learning_state_student_${user?.id || 'guest'}`;
+
   const [query, setQuery] = useState('');
   const [level, setLevel] = useState('all');
   const [category, setCategory] = useState('all');
   const [department, setDepartment] = useState('all');
   const [selectedCourseId, setSelectedCourseId] = useState(courseData[0].id);
   const [discussion, setDiscussion] = useState('');
-  const [state, setState] = useState(readState());
+  const [state, setState] = useState(() => readState(learnerStorageKey));
+
+  useEffect(() => {
+    if (isStudent) {
+      setState(readState(learnerStorageKey));
+    } else {
+      setState({});
+    }
+  }, [isStudent, learnerStorageKey]);
 
   const selectedCourse = courseData.find((c) => c.id === selectedCourseId) || courseData[0];
 
@@ -79,7 +91,7 @@ export default function LearningCenterPage() {
   const updateCourseState = (nextCourseState) => {
     const next = { ...state, [selectedCourse.id]: nextCourseState };
     setState(next);
-    writeState(next);
+    writeState(learnerStorageKey, next);
   };
 
   const toggleLesson = (lesson) => {
@@ -123,10 +135,75 @@ export default function LearningCenterPage() {
     setDiscussion('');
   };
 
+  if (!isStudent && !isFacultyOrAdmin) {
+    return (
+      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>Learning Center</h1>
+        <p className="mt-2 text-gray-600">Learning progress is available for logged-in students.</p>
+        <div className="mt-6 dashboard-surface p-6">
+          <p className="text-gray-700">Please sign in as a student to track course progress, quiz completion, and certificates.</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (isFacultyOrAdmin) {
+    return (
+      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>Learning Catalog</h1>
+        <p className="mt-2 text-gray-600">Faculty/Admin view: review included courses and structure.</p>
+
+        <section className="mt-6 dashboard-surface p-4 grid md:grid-cols-4 gap-3">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by title/instructor"
+            className="px-3 py-2 rounded-lg border border-gray-200"
+          />
+          <select value={level} onChange={(e) => setLevel(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-200">
+            <option value="all">All Levels</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="All Levels">All Levels</option>
+          </select>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-200">
+            <option value="all">All Categories</option>
+            <option value="technical">Technical</option>
+            <option value="career">Career</option>
+          </select>
+          <select value={department} onChange={(e) => setDepartment(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-200">
+            <option value="all">All Departments</option>
+            <option value="CSE">CSE</option>
+            <option value="IT">IT</option>
+            <option value="MBA">MBA</option>
+          </select>
+        </section>
+
+        <section className="mt-6 grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredCourses.map((course) => (
+            <article key={course.id} className="dashboard-surface p-5">
+              <h2 className="text-xl font-bold text-gray-900">{course.title}</h2>
+              <p className="text-sm text-gray-600 mt-1">{course.instructor} • {course.department}</p>
+              <p className="text-sm text-gray-600 mt-2">{course.level} • {course.category}</p>
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-gray-900">Lessons Included</p>
+                <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                  {course.lessons.map((lesson) => (
+                    <li key={lesson}>• {lesson}</li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          ))}
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>Learning Center</h1>
-      <p className="mt-2 text-gray-600">Courses, lessons, quiz, progress, certificate, and discussion in one place.</p>
+      <p className="mt-2 text-gray-600">Student view: your progress is saved per student account on this device.</p>
 
       <section className="mt-6 dashboard-surface p-4 grid md:grid-cols-4 gap-3">
         <input
