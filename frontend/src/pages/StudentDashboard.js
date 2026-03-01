@@ -17,7 +17,7 @@ import {
   Trophy,
   Star,
   Sparkles,
-  Link,
+  Link as LinkIcon,
   Share2,
 } from 'lucide-react';
 import { api, cachedGet, clearApiCache } from '../utils/api';
@@ -530,7 +530,7 @@ export default function StudentDashboard({ user, onLogout }) {
                           className="px-3 py-2 rounded-lg border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                           title="Copy event link"
                         >
-                          <Link className="w-4 h-4" />
+                          <LinkIcon className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleCopyEventLink(event.id)}
