@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Calendar,
   Clock3,
+  House,
   Users,
   Plus,
   LogOut,
@@ -15,6 +16,7 @@ import {
   X,
   UserCheck
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { api, cachedGet, clearApiCache } from '../utils/api';
 import TimetableManager from '@/components/TimetableManager';
 
@@ -256,6 +258,13 @@ export default function FacultyDashboard({ user, onLogout }) {
             <p className="font-semibold mt-1">{user.name}</p>
             <p className="text-xs text-indigo-300 mt-1">{user.email}</p>
           </div>
+          <Link
+            to="/"
+            className="w-full mb-2 flex items-center justify-center gap-2 px-4 py-3 text-white hover:bg-indigo-800 rounded-lg transition-colors border border-indigo-500/50"
+          >
+            <House className="w-5 h-5" />
+            <span className="font-medium">Home Page</span>
+          </Link>
           <button
             onClick={onLogout}
             data-testid="logout-button"
@@ -275,13 +284,22 @@ export default function FacultyDashboard({ user, onLogout }) {
               <p className="text-sm text-gray-500">Faculty Panel</p>
               <p className="font-semibold text-gray-900">{user.name}</p>
             </div>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-indigo-900"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-indigo-900"
+              >
+                <House className="w-4 h-4" />
+                Home
+              </Link>
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-indigo-900"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button

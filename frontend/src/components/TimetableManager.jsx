@@ -22,6 +22,24 @@ export default function TimetableManager({ canEdit = false, compact = false }) {
     return [...slots].sort((a, b) => (order[a.day] || 99) - (order[b.day] || 99));
   }, [slots]);
 
+  const dayPalette = {
+    Monday: 'from-blue-500/20 to-cyan-500/20 border-blue-200',
+    Tuesday: 'from-violet-500/20 to-fuchsia-500/20 border-violet-200',
+    Wednesday: 'from-emerald-500/20 to-teal-500/20 border-emerald-200',
+    Thursday: 'from-amber-500/20 to-orange-500/20 border-amber-200',
+    Friday: 'from-rose-500/20 to-pink-500/20 border-rose-200',
+    Saturday: 'from-slate-500/20 to-gray-500/20 border-slate-200',
+    Sunday: 'from-indigo-500/20 to-blue-500/20 border-indigo-200',
+  };
+
+  const trackPalette = {
+    Academic: 'bg-blue-100 text-blue-800',
+    Technical: 'bg-violet-100 text-violet-800',
+    Innovation: 'bg-emerald-100 text-emerald-800',
+    Design: 'bg-amber-100 text-amber-800',
+    Career: 'bg-rose-100 text-rose-800',
+  };
+
   const persist = (next) => {
     setSlots(next);
     saveTimetableSlots(next);
@@ -65,6 +83,20 @@ export default function TimetableManager({ canEdit = false, compact = false }) {
 
   return (
     <div className="space-y-6">
+      <section className="relative overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-600 via-sky-600 to-fuchsia-600 p-5 text-white">
+        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-white/15 blur-2xl" />
+        <div className="absolute -bottom-12 -right-8 w-40 h-40 rounded-full bg-amber-300/25 blur-2xl" />
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-indigo-100">Weekly View</p>
+            <h3 className="text-2xl font-bold mt-1" style={{ fontFamily: 'Outfit, sans-serif' }}>Campus Timetable Board</h3>
+          </div>
+          <p className="text-sm text-indigo-50">
+            {canEdit ? 'You can manage slots here.' : 'Read-only public schedule.'}
+          </p>
+        </div>
+      </section>
+
       {!compact && (
         <section className="grid md:grid-cols-3 gap-4">
           <div className="stat-card">
@@ -81,6 +113,18 @@ export default function TimetableManager({ canEdit = false, compact = false }) {
           </div>
         </section>
       )}
+
+      <section className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        {Object.keys(dayPalette).map((day) => {
+          const count = orderedSlots.filter((slot) => slot.day === day).length;
+          return (
+            <div key={day} className={`rounded-xl border p-4 bg-gradient-to-br ${dayPalette[day] || 'from-gray-100 to-gray-50 border-gray-200'}`}>
+              <p className="text-sm font-semibold text-gray-900">{day}</p>
+              <p className="text-xs text-gray-600 mt-1">{count} slot{count === 1 ? '' : 's'} scheduled</p>
+            </div>
+          );
+        })}
+      </section>
 
       {canEdit && (
         <section className="dashboard-surface p-5">
@@ -130,12 +174,14 @@ export default function TimetableManager({ canEdit = false, compact = false }) {
           </thead>
           <tbody>
             {orderedSlots.map((slot) => (
-              <tr key={slot.id} className="border-b border-gray-100 hover:bg-gray-50">
+              <tr key={slot.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">{slot.day}</td>
                 <td className="px-4 py-3 text-sm text-gray-600">{slot.time}</td>
                 <td className="px-4 py-3 text-sm text-gray-700">{slot.title}</td>
                 <td className="px-4 py-3 text-sm">
-                  <span className="px-2 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-900">{slot.track}</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${trackPalette[slot.track] || 'bg-indigo-100 text-indigo-900'}`}>
+                    {slot.track}
+                  </span>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-600">{slot.instructor || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-600">{slot.venue}</td>

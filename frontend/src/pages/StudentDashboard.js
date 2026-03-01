@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   Calendar,
   Bell,
   LogOut,
+  House,
   Search,
   Filter,
   MapPin,
@@ -292,7 +294,7 @@ export default function StudentDashboard({ user, onLogout }) {
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
+                  <div className="fixed left-4 right-4 top-20 sm:absolute sm:right-0 sm:left-auto sm:top-auto sm:mt-2 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50">
                     <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                       <h3 className="font-semibold text-gray-900">Notifications</h3>
                       {unreadCount > 0 && (
@@ -322,10 +324,16 @@ export default function StudentDashboard({ user, onLogout }) {
                 )}
               </div>
 
-              <button onClick={onLogout} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-indigo-900 transition-colors">
-                <LogOut className="w-5 h-5" />
-                <span className="font-medium">Logout</span>
-              </button>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Link to="/" className="flex items-center gap-2 px-3 sm:px-4 py-2 text-gray-700 hover:text-indigo-900 transition-colors">
+                  <House className="w-5 h-5" />
+                  <span className="font-medium hidden sm:inline">Home</span>
+                </Link>
+                <button onClick={onLogout} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-gray-700 hover:text-indigo-900 transition-colors">
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium hidden sm:inline">Logout</span>
+                </button>
+              </div>
             </div>
           </div>
 
