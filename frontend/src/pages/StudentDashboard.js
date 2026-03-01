@@ -17,6 +17,7 @@ import {
   Trophy,
   Star,
   Sparkles,
+  Download,
   Link as LinkIcon,
   Share2,
 } from 'lucide-react';
@@ -40,6 +41,7 @@ export default function StudentDashboard({ user, onLogout }) {
   const [inviteCode, setInviteCode] = useState('');
   const [checkInCode, setCheckInCode] = useState('');
   const [feedbackByEvent, setFeedbackByEvent] = useState({});
+  const [announcements, setAnnouncements] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -62,6 +64,12 @@ export default function StudentDashboard({ user, onLogout }) {
       setProfile(meData);
       setInterests(meData.interests || []);
       setLeaderboard(leaderboardData);
+      try {
+        const annData = await cachedGet('/announcements');
+        setAnnouncements(annData);
+      } catch (announcementError) {
+        console.error('Announcements unavailable', announcementError);
+      }
     } catch (error) {
       toast.error('Failed to load dashboard data');
     } finally {
@@ -253,6 +261,25 @@ export default function StudentDashboard({ user, onLogout }) {
     window.open(url, '_blank');
   };
 
+  const handleDownloadCertificate = async (eventId, eventTitle) => {
+    try {
+      const response = await api.get(`/certificates/${eventId}/download`, {
+        params: { format: 'pdf' },
+        responseType: 'blob',
+      });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(eventTitle || 'certificate').replace(/\s+/g, '_')}_certificate.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success('Certificate downloaded');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Certificate not available yet');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
@@ -390,6 +417,23 @@ export default function StudentDashboard({ user, onLogout }) {
             </div>
           </div>
         </div>
+
+        {announcements.length > 0 && (
+          <div className="bg-white rounded-xl p-5 border border-gray-100 mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Bell className="w-5 h-5 text-indigo-700" />
+              <h3 className="font-semibold text-gray-900">Latest Announcements</h3>
+            </div>
+            <div className="space-y-2 max-h-40 overflow-y-auto scroll-container">
+              {announcements.slice(0, 4).map((item) => (
+                <div key={item.id} className="p-3 rounded-lg bg-gray-50 border border-gray-100">
+                  <p className="font-semibold text-gray-900 text-sm">{item.title}</p>
+                  <p className="text-sm text-gray-600 mt-1">{item.message}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-xl p-5 border border-gray-100 mb-8">
           <div className="flex items-center gap-2 mb-3">
@@ -634,12 +678,23 @@ export default function StudentDashboard({ user, onLogout }) {
                           </div>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleCancelRegistration(reg.id)}
-                        className="ml-4 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium"
-                      >
-                        Cancel
-                      </button>
+                      <div className="ml-4 flex items-center gap-2">
+                        {reg.status === 'attended' && (
+                          <button
+                            onClick={() => handleDownloadCertificate(event.id, event.title)}
+                            className="px-4 py-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors font-medium flex items-center gap-2"
+                          >
+                            <Download className="w-4 h-4" />
+                            Certificate
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleCancelRegistration(reg.id)}
+                          className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
 
                     <div className="mt-4 border-t border-gray-100 pt-4">

@@ -13,6 +13,9 @@ import {
   Download,
   TrendingUp,
   CheckCircle,
+  Megaphone,
+  BarChart3,
+  Search,
   X,
   UserCheck
 } from 'lucide-react';
@@ -33,6 +36,17 @@ export default function FacultyDashboard({ user, onLogout }) {
   const [participants, setParticipants] = useState([]);
   const [checkinCode, setCheckinCode] = useState('');
   const [checkinCodeExpires, setCheckinCodeExpires] = useState('');
+  const [announcements, setAnnouncements] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+  const [attendanceInsights, setAttendanceInsights] = useState([]);
+  const [globalQuery, setGlobalQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [announcementForm, setAnnouncementForm] = useState({
+    title: '',
+    message: '',
+    target_roles: ['student'],
+    target_departments: [],
+  });
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -62,6 +76,18 @@ export default function FacultyDashboard({ user, onLogout }) {
       setEvents(myEvents);
       setAllEvents(eventsData);
       setStats(statsData);
+      try {
+        const [annData, analyticsData, insightsData] = await Promise.all([
+          cachedGet('/announcements'),
+          cachedGet('/dashboard/analytics'),
+          cachedGet('/attendance/insights'),
+        ]);
+        setAnnouncements(annData);
+        setAnalytics(analyticsData);
+        setAttendanceInsights(insightsData);
+      } catch (extraError) {
+        console.error('Advanced modules unavailable', extraError);
+      }
     } catch (error) {
       toast.error('Failed to load data');
     } finally {
@@ -93,7 +119,7 @@ export default function FacultyDashboard({ user, onLogout }) {
       clearApiCache();
       fetchData();
     } catch (error) {
-      toast.error('Failed to update event');
+      toast.error(error.response?.data?.detail || 'Failed to update event');
     }
   };
 
@@ -188,6 +214,64 @@ export default function FacultyDashboard({ user, onLogout }) {
     setSelectedEvent(null);
   };
 
+  const toggleRoleTarget = (role) => {
+    setAnnouncementForm((prev) => ({
+      ...prev,
+      target_roles: prev.target_roles.includes(role)
+        ? prev.target_roles.filter((r) => r !== role)
+        : [...prev.target_roles, role],
+    }));
+  };
+
+  const publishAnnouncement = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/announcements', announcementForm);
+      toast.success('Announcement published');
+      setAnnouncementForm({ title: '', message: '', target_roles: ['student'], target_departments: [] });
+      clearApiCache();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to publish announcement');
+    }
+  };
+
+  const runGlobalSearch = async () => {
+    if (!globalQuery.trim()) {
+      setSearchResults(null);
+      return;
+    }
+    try {
+      const response = await api.get('/search', {
+        params: { q: globalQuery.trim(), scope: 'all' },
+      });
+      setSearchResults(response.data);
+    } catch (error) {
+      toast.error('Search failed');
+    }
+  };
+
+  const downloadExport = async (type, format = 'csv') => {
+    try {
+      const response = await api.get(`/exports/${type}`, {
+        params: { format },
+        responseType: 'blob',
+      });
+      const ext = format.toLowerCase() === 'pdf' ? 'pdf' : 'csv';
+      const blob = new Blob([response.data], {
+        type: format.toLowerCase() === 'pdf' ? 'application/pdf' : 'text/csv',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${type}_export.${ext}`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error('Export failed');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
@@ -250,6 +334,15 @@ export default function FacultyDashboard({ user, onLogout }) {
             <Clock3 className="w-5 h-5" />
             <span className="font-medium">Timetable</span>
           </button>
+          <button
+            onClick={() => setActiveView('insights')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              activeView === 'insights' ? 'bg-white text-indigo-900' : 'text-white hover:bg-indigo-800'
+            }`}
+          >
+            <BarChart3 className="w-5 h-5" />
+            <span className="font-medium">Insights</span>
+          </button>
         </nav>
 
         <div className="absolute bottom-6 left-6 right-6">
@@ -301,7 +394,7 @@ export default function FacultyDashboard({ user, onLogout }) {
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <button
               onClick={() => setActiveView('dashboard')}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -333,6 +426,14 @@ export default function FacultyDashboard({ user, onLogout }) {
               }`}
             >
               Timetable
+            </button>
+            <button
+              onClick={() => setActiveView('insights')}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeView === 'insights' ? 'bg-indigo-900 text-white' : 'bg-gray-100 text-gray-700'
+              }`}
+            >
+              Insights
             </button>
           </div>
         </div>
@@ -581,6 +682,134 @@ export default function FacultyDashboard({ user, onLogout }) {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {activeView === 'insights' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                Insights & Communication
+              </h2>
+              <p className="text-gray-600 mt-2">Track attendance intelligence, share announcements, and export records.</p>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <section className="dashboard-surface p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Megaphone className="w-5 h-5 text-indigo-900" />
+                  <h3 className="text-xl font-bold text-gray-900">Faculty Announcement</h3>
+                </div>
+                <form onSubmit={publishAnnouncement} className="space-y-3">
+                  <input
+                    value={announcementForm.title}
+                    onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })}
+                    placeholder="Title"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200"
+                    required
+                  />
+                  <textarea
+                    value={announcementForm.message}
+                    onChange={(e) => setAnnouncementForm({ ...announcementForm, message: e.target.value })}
+                    placeholder="Message"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 min-h-24"
+                    required
+                  />
+                  <div className="flex gap-2 flex-wrap">
+                    {['student', 'faculty'].map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => toggleRoleTarget(role)}
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          announcementForm.target_roles.includes(role)
+                            ? 'bg-indigo-900 text-white'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {role}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="submit" className="btn-primary px-5 py-2 rounded-lg">
+                    Publish
+                  </button>
+                </form>
+                <div className="mt-4 max-h-48 overflow-y-auto scroll-container space-y-2">
+                  {announcements.slice(0, 5).map((a) => (
+                    <div key={a.id} className="p-3 rounded-lg border border-gray-100 bg-gray-50">
+                      <p className="font-semibold text-gray-900">{a.title}</p>
+                      <p className="text-sm text-gray-600 mt-1">{a.message}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="dashboard-surface p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Search className="w-5 h-5 text-indigo-900" />
+                  <h3 className="text-xl font-bold text-gray-900">Global Search</h3>
+                </div>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    value={globalQuery}
+                    onChange={(e) => setGlobalQuery(e.target.value)}
+                    placeholder="Search events/users/instructors/workshops"
+                    className="flex-1 px-3 py-2 rounded-lg border border-gray-200"
+                  />
+                  <button onClick={runGlobalSearch} className="btn-primary px-4 py-2 rounded-lg">
+                    Search
+                  </button>
+                </div>
+                {searchResults && (
+                  <div className="text-sm text-gray-700 space-y-1">
+                    <p>Events: {(searchResults.events || []).length}</p>
+                    <p>Users: {(searchResults.users || []).length}</p>
+                    <p>Instructors: {(searchResults.instructors || []).length}</p>
+                    <p>Workshops: {(searchResults.workshops || []).length}</p>
+                  </div>
+                )}
+                <div className="mt-5 pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Download className="w-4 h-4 text-indigo-900" />
+                    <p className="font-semibold text-gray-900">Export Center</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => downloadExport('events', 'csv')} className="px-3 py-2 rounded-lg bg-gray-100 text-gray-800 text-sm">Events CSV</button>
+                    <button onClick={() => downloadExport('attendance', 'csv')} className="px-3 py-2 rounded-lg bg-gray-100 text-gray-800 text-sm">Attendance CSV</button>
+                    <button onClick={() => downloadExport('participation', 'csv')} className="px-3 py-2 rounded-lg bg-gray-100 text-gray-800 text-sm">Participation CSV</button>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <section className="dashboard-surface p-5">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Top Categories (My scope)</h3>
+                <div className="space-y-2">
+                  {(analytics?.top_categories || []).slice(0, 8).map((c) => (
+                    <div key={c.category} className="flex items-center justify-between text-sm">
+                      <span className="capitalize text-gray-700">{c.category}</span>
+                      <span className="font-semibold text-indigo-900">{c.registrations}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="dashboard-surface p-5">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Attendance Intelligence</h3>
+                <div className="space-y-2 max-h-72 overflow-y-auto scroll-container">
+                  {attendanceInsights.slice(0, 12).map((insight) => (
+                    <div key={insight.event_id} className="p-3 rounded-lg border border-gray-100">
+                      <p className="font-semibold text-gray-900">{insight.event_title}</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Attended {insight.attended}/{insight.total_registered} | Late {insight.late_entries} | No-show {insight.no_show}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
           </div>
         )}
