@@ -3,8 +3,8 @@ import { CalendarDays, GraduationCap, Layers, Sparkles, Users } from 'lucide-rea
 
 const highlights = [
   { icon: CalendarDays, title: 'Event Operations', text: 'Plan seminars, festivals, workshops, and registrations in one place.' },
-  { icon: GraduationCap, title: 'Learning Paths', text: 'Publish modules, lessons, and quizzes with progress tracking.' },
-  { icon: Users, title: 'Faculty + Student Hub', text: 'Connect course delivery with event participation and points.' },
+  { icon: GraduationCap, title: 'Workshop Programs', text: 'Run training programs and workshops linked to campus events.' },
+  { icon: Users, title: 'Faculty + Student Hub', text: 'Coordinate departments, speakers, and student participation.' },
   { icon: Layers, title: 'Role-Based Panels', text: 'Dedicated experiences for admin, faculty, and students.' },
 ];
 
@@ -21,14 +21,14 @@ export default function HomePage() {
               CampusHub Platform
             </p>
             <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              Build a Vibrant Learning Campus
+              Run a High-Impact Event Campus
             </h1>
             <p className="mt-5 text-base sm:text-lg text-indigo-50 max-w-xl">
-              Blend classes, AI programs, faculty mentorship, and event operations in one high-engagement platform.
+              Plan, publish, and manage university events, workshops, and operational programs from one platform.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/learning" className="px-5 py-3 rounded-xl bg-white text-indigo-700 font-semibold hover:bg-indigo-50 transition-colors">
-                Explore Learning Center
+              <Link to="/workshops" className="px-5 py-3 rounded-xl bg-white text-indigo-700 font-semibold hover:bg-indigo-50 transition-colors">
+                Explore Workshops
               </Link>
               <Link to="/programs" className="px-5 py-3 rounded-xl bg-indigo-900/40 border border-white/30 text-white font-semibold hover:bg-indigo-900/60 transition-colors">
                 View Programs
@@ -60,7 +60,7 @@ export default function HomePage() {
 
       <section className="mt-10 grid md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="stat-card">
-          <p className="text-sm text-gray-500">Active Learners</p>
+          <p className="text-sm text-gray-500">Active Participants</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">4,800+</p>
         </div>
         <div className="stat-card">
@@ -72,7 +72,7 @@ export default function HomePage() {
           <p className="text-3xl font-bold text-gray-900 mt-1">95</p>
         </div>
         <div className="stat-card">
-          <p className="text-sm text-gray-500">Completion Rate</p>
+          <p className="text-sm text-gray-500">Attendance Rate</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">87%</p>
         </div>
       </section>
@@ -93,7 +93,7 @@ export default function HomePage() {
           {[
             'CampusHub made registrations and reminders effortless.',
             'Our faculty workshops now run with less coordination overhead.',
-            'I track my events and learning progress in one dashboard.',
+            'I track my event registrations and schedules in one dashboard.',
           ].map((item, index) => (
             <div key={index} className="rounded-xl border border-gray-100 bg-white p-4">
               <p className="text-gray-700 text-sm">{item}</p>

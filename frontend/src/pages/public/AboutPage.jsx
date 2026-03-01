@@ -4,8 +4,8 @@ export default function AboutPage() {
       <div className="dashboard-surface p-6 sm:p-8">
         <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Outfit, sans-serif' }}>About CampusHub</h1>
         <p className="mt-4 text-gray-600 leading-relaxed">
-          CampusHub is built to unify academic learning and campus event operations. Instead of separate tools for
-          courses, workshops, and student programs, departments can plan, publish, track, and report from one platform.
+          CampusHub is built as a university event management system. Instead of fragmented tools for planning,
+          registration, attendance, and reporting, departments can manage the full event lifecycle from one platform.
         </p>
         <div className="mt-6 grid md:grid-cols-3 gap-4">
           <div className="stat-card">
@@ -14,7 +14,7 @@ export default function AboutPage() {
           </div>
           <div className="stat-card">
             <p className="text-sm text-gray-500">Vision</p>
-            <p className="mt-2 font-semibold text-gray-900">Every student journey tracked from participation to mastery.</p>
+            <p className="mt-2 font-semibold text-gray-900">Every university event delivered with clarity, speed, and measurable impact.</p>
           </div>
           <div className="stat-card">
             <p className="text-sm text-gray-500">Core Value</p>

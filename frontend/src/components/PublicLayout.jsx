@@ -8,7 +8,7 @@ const links = [
   { to: '/programs', label: 'Programs' },
   { to: '/instructors', label: 'Instructors' },
   { to: '/timetable', label: 'Timetable' },
-  { to: '/learning', label: 'Learning' },
+  { to: '/workshops', label: 'Workshops' },
   { to: '/contact', label: 'Contact' },
   { to: '/faq', label: 'FAQ' },
 ];
@@ -88,7 +88,7 @@ export default function PublicLayout({ user }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <p className="text-lg font-semibold text-gray-900">CampusHub</p>
-            <p className="text-sm text-gray-600">Learning + events platform for modern campuses.</p>
+            <p className="text-sm text-gray-600">University event operations platform for modern campuses.</p>
           </div>
           <p className="text-sm text-gray-500">Built for students, faculty, and admins.</p>
         </div>

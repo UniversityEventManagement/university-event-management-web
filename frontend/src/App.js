@@ -137,7 +137,8 @@ function App() {
                 <Route path="/programs" element={<ProgramsPage />} />
                 <Route path="/instructors" element={<InstructorsPage />} />
                 <Route path="/timetable" element={<TimetablePage />} />
-                <Route path="/learning" element={<LearningCenterPage />} />
+                <Route path="/workshops" element={<LearningCenterPage />} />
+                <Route path="/learning" element={<Navigate to="/workshops" />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/faq" element={<FaqPage />} />
               </Route>

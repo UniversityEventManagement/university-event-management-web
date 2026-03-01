@@ -1,6 +1,6 @@
 const items = [
-  { q: 'Can CampusHub manage both courses and events?', a: 'Yes. Learning modules and event workflows are unified.' },
-  { q: 'Do students get progress tracking?', a: 'Yes. Progress, points, and completion status are available in dashboards.' },
+  { q: 'Can CampusHub manage workshops and events?', a: 'Yes. Programs, workshops, and event workflows are supported.' },
+  { q: 'Can students register and track event participation?', a: 'Yes. Students can register, check in, and view their registrations.' },
   { q: 'Can faculty manage attendance and reports?', a: 'Yes. Faculty can manage participants and export reports.' },
   { q: 'Does it support mobile devices?', a: 'Yes. The platform is responsive across phones, tablets, and desktops.' },
 ];
