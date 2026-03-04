@@ -86,7 +86,7 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-rose-50 flex items-center justify-center p-3 sm:p-4 lg:p-8">
+    <div className="min-h-screen login-scene flex items-center justify-center p-3 sm:p-4 lg:p-8">
       <main id="main-content" className="w-full max-w-7xl grid xl:grid-cols-2 gap-6 xl:gap-12 items-center">
         {/* Left Side - Hero Section */}
         <div className="hidden xl:block space-y-8 animate-fade-in">

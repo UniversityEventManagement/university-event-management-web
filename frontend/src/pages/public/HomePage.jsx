@@ -11,7 +11,7 @@ const highlights = [
 export default function HomePage() {
   return (
     <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-      <section className="relative overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-600 via-sky-600 to-fuchsia-600 p-8 sm:p-10 lg:p-14 text-white">
+      <section className="home-hero rounded-3xl border p-8 sm:p-10 lg:p-14 text-white">
         <div className="absolute -top-24 -left-20 w-72 h-72 rounded-full bg-white/15 blur-3xl" />
         <div className="absolute -bottom-20 -right-16 w-72 h-72 rounded-full bg-yellow-300/25 blur-3xl" />
         <div className="relative grid lg:grid-cols-2 gap-10 items-center">
