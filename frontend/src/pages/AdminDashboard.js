@@ -23,6 +23,7 @@ import {
 import { Link } from 'react-router-dom';
 import { api, cachedGet, clearApiCache } from '../utils/api';
 import { getInstructors, getPrograms, saveInstructors, savePrograms } from '@/utils/contentStore';
+import { getEventCardImage } from '../utils/eventImages';
 import TimetableManager from '@/components/TimetableManager';
 
 export default function AdminDashboard({ user, onLogout }) {
@@ -581,7 +582,7 @@ export default function AdminDashboard({ user, onLogout }) {
                   <div
                     className="event-image-strip mb-4"
                     style={{
-                      backgroundImage: `url(${event.image_url || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?crop=entropy&cs=srgb&fm=jpg&q=85'})`,
+                      backgroundImage: `url(${getEventCardImage(event)})`,
                     }}
                   />
                   <div className="flex items-start justify-between mb-4">

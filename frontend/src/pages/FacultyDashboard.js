@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api, cachedGet, clearApiCache } from '../utils/api';
+import { getEventCardImage } from '../utils/eventImages';
 import TimetableManager from '@/components/TimetableManager';
 
 export default function FacultyDashboard({ user, onLogout }) {
@@ -549,7 +550,7 @@ export default function FacultyDashboard({ user, onLogout }) {
                   <div
                     className="event-image-strip mb-4"
                     style={{
-                      backgroundImage: `url(${event.image_url || 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?crop=entropy&cs=srgb&fm=jpg&q=85'})`,
+                      backgroundImage: `url(${getEventCardImage(event)})`,
                     }}
                   />
                   <div className="flex items-start justify-between mb-4">
@@ -644,7 +645,7 @@ export default function FacultyDashboard({ user, onLogout }) {
                   <div
                     className="event-image-strip mb-4"
                     style={{
-                      backgroundImage: `url(${event.image_url || 'https://images.unsplash.com/photo-1511578314322-379afb476865?crop=entropy&cs=srgb&fm=jpg&q=85'})`,
+                      backgroundImage: `url(${getEventCardImage(event)})`,
                     }}
                   />
                   <div className="flex items-start justify-between mb-4">

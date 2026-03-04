@@ -22,6 +22,7 @@ import {
   Share2,
 } from 'lucide-react';
 import { api, cachedGet, clearApiCache } from '../utils/api';
+import { getEventCardImage } from '../utils/eventImages';
 
 const INTEREST_OPTIONS = ['seminar', 'workshop', 'cultural', 'sports', 'technical', 'career', 'startup'];
 
@@ -515,7 +516,7 @@ export default function StudentDashboard({ user, onLogout }) {
                     <div
                       className="h-48 bg-cover bg-center rounded-t-xl"
                       style={{
-                        backgroundImage: `url(${event.image_url || 'https://images.unsplash.com/photo-1758270705902-f50dde4add9f?crop=entropy&cs=srgb&fm=jpg&q=85'})`,
+                        backgroundImage: `url(${getEventCardImage(event)})`,
                       }}
                     >
                       <div className="h-full bg-gradient-to-t from-black/70 to-transparent rounded-t-xl flex items-end p-4">
