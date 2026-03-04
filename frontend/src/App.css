@@ -122,6 +122,86 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-muted);
 }
 
+@property --p-load {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@property --r-load {
+  syntax: "<length-percentage>";
+  initial-value: 0px;
+  inherits: false;
+}
+
+@property --x-load {
+  syntax: "<length-percentage>";
+  initial-value: 0px;
+  inherits: false;
+}
+
+@property --y-load {
+  syntax: "<length-percentage>";
+  initial-value: 0px;
+  inherits: false;
+}
+
+.load {
+  --r: 2.5em;
+  --b: calc(0.2 * var(--r));
+  --u: calc(0.5 * var(--b));
+  --t: 6s;
+  counter-reset: p var(--p-load);
+  width: calc(2 * (var(--r) + var(--b)));
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  mix-blend-mode: lighten;
+  animation: p-load var(--t) linear infinite;
+}
+
+.load::before,
+.load::after {
+  grid-area: 1 / 1;
+}
+
+.load::before {
+  --x-load: var(--u);
+  --y-load: var(--u);
+  --r-load: calc(100% - var(--b));
+  --rond: red calc(var(--u) - 1px), #0000 var(--u);
+  --mask:
+    radial-gradient(circle at var(--x-load) var(--y-load), var(--rond)),
+    radial-gradient(closest-side, #0000 var(--r-load), red calc(var(--r-load) + 1px) calc(100% - 1px), #0000),
+    conic-gradient(red calc(var(--p-load) * 1%), #0000 0%),
+    radial-gradient(circle at 50% var(--u), var(--rond));
+  width: calc(2 * var(--r));
+  height: calc(2 * var(--r));
+  background: linear-gradient(-45deg, #d196dd, #fd954e);
+  border-radius: 50%;
+  -webkit-mask: var(--mask);
+  mask: var(--mask);
+  -webkit-mask-composite: source-over, source-in;
+  mask-composite: add, intersect;
+  animation:
+    r-load var(--t) ease-out infinite,
+    x-load calc(0.25 * var(--t)) cubic-bezier(0.365, 0, 0.635, 1) calc(-0.125 * var(--t)) infinite alternate,
+    y-load calc(0.25 * var(--t)) cubic-bezier(0.365, 0, 0.635, 1) infinite alternate;
+  content: "";
+}
+
+.load::after {
+  place-self: center;
+  font: 900 2.15em "Cousine", monospace;
+  letter-spacing: 0.01em;
+  background: linear-gradient(-45deg, #d196dd, #fd954e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  mix-blend-mode: difference;
+  content: counter(p) "%";
+}
+
 .glass-effect {
   backdrop-filter: blur(20px);
   background: rgba(255, 255, 255, 0.7);
@@ -589,6 +669,23 @@ h1, h2, h3, h4, h5, h6 {
 @keyframes cardReveal {
   from { opacity: 0; transform: translateY(10px) scale(0.99); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes p-load {
+  50%, 100% { --p-load: 100; }
+}
+
+@keyframes r-load {
+  0%, 50% { --r-load: calc(100% - var(--b)); }
+  75%, 100% { --r-load: -1px; }
+}
+
+@keyframes x-load {
+  100% { --x-load: calc(100% - var(--u)); }
+}
+
+@keyframes y-load {
+  100% { --y-load: calc(100% - var(--u)); }
 }
 
 .skip-link {

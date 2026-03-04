@@ -24,10 +24,7 @@ function AppLoader() {
     <div className="app-loader-screen">
       <div className="loader-ambient loader-ambient-a" />
       <div className="loader-ambient loader-ambient-b" />
-      <div className="loader-core">
-        <div className="loader-orbit" />
-        <div className="loader-dot" />
-      </div>
+      <div className="load" aria-label="Loading progress" />
       <p className="loader-label">Preparing CampusHub...</p>
     </div>
   );
