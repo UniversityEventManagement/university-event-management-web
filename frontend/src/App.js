@@ -19,13 +19,23 @@ const LearningCenterPage = lazy(() => import('./pages/public/LearningCenterPage'
 const ContactPage = lazy(() => import('./pages/public/ContactPage'));
 const FaqPage = lazy(() => import('./pages/public/FaqPage'));
 
-function AppLoader() {
+function AppLoader({ progress = null, label = 'Preparing CampusHub...' }) {
+  const safeProgress = typeof progress === 'number'
+    ? Math.max(0, Math.min(100, Math.round(progress)))
+    : null;
+
   return (
     <div className="app-loader-screen">
       <div className="loader-ambient loader-ambient-a" />
       <div className="loader-ambient loader-ambient-b" />
-      <div className="load" aria-label="Loading progress" />
-      <p className="loader-label">Preparing CampusHub...</p>
+      <div
+        className={`load ${safeProgress === null ? 'is-indeterminate' : 'is-determinate'}`}
+        aria-label="Loading progress"
+        style={safeProgress === null ? undefined : { '--p-load': safeProgress }}
+      />
+      <p className="loader-label">
+        {safeProgress === null ? label : `${label} ${safeProgress}%`}
+      </p>
     </div>
   );
 }
@@ -52,7 +62,9 @@ function DashboardRoute({ user, onLogout }) {
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [bootProgress, setBootProgress] = useState(0);
+  const [bootReady, setBootReady] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
@@ -66,7 +78,30 @@ function App() {
         localStorage.removeItem('token');
       }
     }
-    setLoading(false);
+    setAuthLoading(false);
+  }, []);
+
+  useEffect(() => {
+    const bootSeen = sessionStorage.getItem('campushub_boot_done') === '1';
+    if (bootSeen) {
+      setBootProgress(100);
+      setBootReady(true);
+      return;
+    }
+
+    let progress = 0;
+    const timer = window.setInterval(() => {
+      progress += Math.floor(Math.random() * 8) + 4;
+      if (progress >= 100) {
+        progress = 100;
+        window.clearInterval(timer);
+        sessionStorage.setItem('campushub_boot_done', '1');
+        setBootReady(true);
+      }
+      setBootProgress(progress);
+    }, 120);
+
+    return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -124,7 +159,7 @@ function App() {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  if (loading) return <AppLoader />;
+  if (authLoading || !bootReady) return <AppLoader progress={bootProgress} label="Preparing CampusHub" />;
 
   return (
     <ErrorBoundary>

@@ -128,36 +128,18 @@ h1, h2, h3, h4, h5, h6 {
   inherits: true;
 }
 
-@property --r-load {
-  syntax: "<length-percentage>";
-  initial-value: 0px;
-  inherits: false;
-}
-
-@property --x-load {
-  syntax: "<length-percentage>";
-  initial-value: 0px;
-  inherits: false;
-}
-
-@property --y-load {
-  syntax: "<length-percentage>";
-  initial-value: 0px;
-  inherits: false;
-}
-
 .load {
-  --r: 2.5em;
-  --b: calc(0.2 * var(--r));
-  --u: calc(0.5 * var(--b));
-  --t: 6s;
+  --p-load: 0;
+  --ring-size: 7.5rem;
+  --ring-thickness: 0.72rem;
   counter-reset: p var(--p-load);
-  width: calc(2 * (var(--r) + var(--b)));
+  width: var(--ring-size);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  mix-blend-mode: lighten;
-  animation: p-load var(--t) linear infinite;
+  border-radius: 9999px;
+  position: relative;
+  mix-blend-mode: normal;
 }
 
 .load::before,
@@ -166,27 +148,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .load::before {
-  --x-load: var(--u);
-  --y-load: var(--u);
-  --r-load: calc(100% - var(--b));
-  --rond: red calc(var(--u) - 1px), #0000 var(--u);
-  --mask:
-    radial-gradient(circle at var(--x-load) var(--y-load), var(--rond)),
-    radial-gradient(closest-side, #0000 var(--r-load), red calc(var(--r-load) + 1px) calc(100% - 1px), #0000),
-    conic-gradient(red calc(var(--p-load) * 1%), #0000 0%),
-    radial-gradient(circle at 50% var(--u), var(--rond));
-  width: calc(2 * var(--r));
-  height: calc(2 * var(--r));
-  background: linear-gradient(-45deg, #d196dd, #fd954e);
+  width: 100%;
+  height: 100%;
+  background:
+    conic-gradient(from -90deg, #0b63f3 calc(var(--p-load) * 1%), rgba(149, 194, 255, 0.35) 0%);
   border-radius: 50%;
-  -webkit-mask: var(--mask);
-  mask: var(--mask);
-  -webkit-mask-composite: source-over, source-in;
-  mask-composite: add, intersect;
-  animation:
-    r-load var(--t) ease-out infinite,
-    x-load calc(0.25 * var(--t)) cubic-bezier(0.365, 0, 0.635, 1) calc(-0.125 * var(--t)) infinite alternate,
-    y-load calc(0.25 * var(--t)) cubic-bezier(0.365, 0, 0.635, 1) infinite alternate;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-thickness)), #000 calc(100% - var(--ring-thickness)));
+  mask: radial-gradient(farthest-side, transparent calc(100% - var(--ring-thickness)), #000 calc(100% - var(--ring-thickness)));
+  box-shadow: inset 0 0 0 1px rgba(11, 99, 243, 0.1);
   content: "";
 }
 
@@ -194,12 +163,32 @@ h1, h2, h3, h4, h5, h6 {
   place-self: center;
   font: 900 2.15em "Cousine", monospace;
   letter-spacing: 0.01em;
-  background: linear-gradient(-45deg, #d196dd, #fd954e);
+  background: linear-gradient(135deg, #0b63f3, #0ea5e9);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  mix-blend-mode: difference;
+  mix-blend-mode: normal;
   content: counter(p) "%";
+}
+
+.load.is-indeterminate {
+  animation: p-load 1.5s linear infinite;
+}
+
+.load.is-indeterminate::before {
+  animation: spin 1.2s linear infinite;
+}
+
+.dark .load::before {
+  background:
+    conic-gradient(from -90deg, #38bdf8 calc(var(--p-load) * 1%), rgba(56, 189, 248, 0.25) 0%);
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.22);
+}
+
+.dark .load::after {
+  background: linear-gradient(135deg, #7dd3fc, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .glass-effect {
