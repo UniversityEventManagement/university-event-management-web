@@ -200,6 +200,40 @@ class DashboardAnalytics(BaseModel):
     trend_by_month: List[Dict[str, Any]]
     top_categories: List[Dict[str, Any]]
 
+class AdminUserCreate(BaseModel):
+    email: EmailStr
+    name: str
+    role: str
+    password: str = Field(min_length=6)
+    department: Optional[str] = None
+    student_id: Optional[str] = None
+
+class UserRemovalRequestCreate(BaseModel):
+    target_user_id: Optional[str] = None
+    target_user_email: Optional[EmailStr] = None
+    reason: str = ""
+
+class UserRemovalRequestDecision(BaseModel):
+    decision: str  # approved | rejected
+    admin_note: Optional[str] = None
+
+class UserRemovalRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    requested_by: str
+    requested_by_name: str
+    requested_by_role: str
+    target_user_id: str
+    target_user_name: str
+    target_user_email: str
+    target_user_role: str
+    reason: str = ""
+    status: str = "pending"
+    admin_note: Optional[str] = None
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 POINTS = {
     "register": 10,
     "attended": 20,
@@ -333,6 +367,16 @@ def csv_response(rows: List[Dict[str, Any]], filename: str) -> Response:
         media_type="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+async def delete_user_and_related(user_id: str):
+    registrations = await db.registrations.find({"user_id": user_id}, {"_id": 0, "event_id": 1}).to_list(5000)
+    for reg in registrations:
+        await db.events.update_one({"id": reg["event_id"]}, {"$inc": {"registered_count": -1}})
+
+    await db.registrations.delete_many({"user_id": user_id})
+    await db.notifications.delete_many({"user_id": user_id})
+    await db.feedback.delete_many({"user_id": user_id})
+    await db.users.delete_one({"id": user_id})
 
 # ============= AUTH ROUTES =============
 
@@ -888,6 +932,158 @@ async def get_users(current_user: dict = Depends(get_current_user)):
             user['created_at'] = datetime.fromisoformat(user['created_at'])
     
     return users
+
+@api_router.post("/users", response_model=User)
+async def create_user_by_admin(user_data: AdminUserCreate, current_user: dict = Depends(get_current_user)):
+    ensure_roles(current_user, ["admin"], "Only admin can create users")
+    normalized_role = user_data.role.strip().lower()
+    if normalized_role not in ["admin", "faculty", "student"]:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    existing_user = await db.users.find_one({"email": user_data.email}, {"_id": 0, "id": 1})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    user_obj = User(
+        email=user_data.email,
+        name=user_data.name.strip(),
+        role=normalized_role,
+        department=user_data.department,
+        student_id=user_data.student_id,
+    )
+    doc = user_obj.model_dump()
+    doc["password"] = hash_password(user_data.password)
+    doc["created_at"] = doc["created_at"].isoformat()
+    await db.users.insert_one(doc)
+    return user_obj
+
+@api_router.delete("/users/{user_id}")
+async def delete_user_by_admin(user_id: str, current_user: dict = Depends(get_current_user)):
+    ensure_roles(current_user, ["admin"], "Only admin can delete users")
+    if user_id == current_user["user_id"]:
+        raise HTTPException(status_code=400, detail="Admin cannot delete own account")
+
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "id": 1, "role": 1, "name": 1, "email": 1})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.get("role") == "admin":
+        raise HTTPException(status_code=400, detail="Cannot delete another admin account")
+
+    await delete_user_and_related(user_id)
+    await db.events.update_many({"created_by": user_id}, {"$set": {"created_by": "deleted-user"}})
+    return {"message": f"User '{user['name']}' deleted"}
+
+@api_router.post("/user-removal-requests", response_model=UserRemovalRequest)
+async def create_user_removal_request(data: UserRemovalRequestCreate, current_user: dict = Depends(get_current_user)):
+    ensure_roles(current_user, ["faculty"], "Only faculty can request user removal")
+    target_user = None
+    if data.target_user_id:
+        target_user = await db.users.find_one({"id": data.target_user_id}, {"_id": 0})
+    elif data.target_user_email:
+        target_user = await db.users.find_one({"email": str(data.target_user_email)}, {"_id": 0})
+
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Target user not found")
+    if target_user["role"] == "admin":
+        raise HTTPException(status_code=400, detail="Cannot request removal of admin user")
+    if target_user["id"] == current_user["user_id"]:
+        raise HTTPException(status_code=400, detail="Cannot request own removal")
+
+    requester = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0, "name": 1})
+    req = UserRemovalRequest(
+        requested_by=current_user["user_id"],
+        requested_by_name=(requester or {}).get("name", "Faculty"),
+        requested_by_role=current_user["role"],
+        target_user_id=target_user["id"],
+        target_user_name=target_user["name"],
+        target_user_email=target_user["email"],
+        target_user_role=target_user["role"],
+        reason=(data.reason or "").strip(),
+    )
+    doc = req.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    await db.user_removal_requests.insert_one(doc)
+
+    admins = await db.users.find({"role": "admin"}, {"_id": 0, "id": 1}).to_list(50)
+    notif_docs = []
+    for admin in admins:
+        notif = Notification(
+            user_id=admin["id"],
+            title="User Removal Request",
+            message=f"{req.requested_by_name} requested removal of {req.target_user_name}",
+            type="warning",
+        )
+        notif_doc = notif.model_dump()
+        notif_doc["created_at"] = notif_doc["created_at"].isoformat()
+        notif_docs.append(notif_doc)
+    if notif_docs:
+        await db.notifications.insert_many(notif_docs)
+    return req
+
+@api_router.get("/user-removal-requests", response_model=List[UserRemovalRequest])
+async def list_user_removal_requests(current_user: dict = Depends(get_current_user)):
+    ensure_roles(current_user, ["admin", "faculty"], "Not authorized")
+    query = {} if current_user["role"] == "admin" else {"requested_by": current_user["user_id"]}
+    requests = await db.user_removal_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    normalized = []
+    for req in requests:
+        if isinstance(req.get("created_at"), str):
+            req["created_at"] = datetime.fromisoformat(req["created_at"])
+        if req.get("reviewed_at") and isinstance(req.get("reviewed_at"), str):
+            req["reviewed_at"] = datetime.fromisoformat(req["reviewed_at"])
+        normalized.append(UserRemovalRequest(**req))
+    return normalized
+
+@api_router.put("/user-removal-requests/{request_id}", response_model=UserRemovalRequest)
+async def decide_user_removal_request(request_id: str, data: UserRemovalRequestDecision, current_user: dict = Depends(get_current_user)):
+    ensure_roles(current_user, ["admin"], "Only admin can review removal requests")
+    req = await db.user_removal_requests.find_one({"id": request_id}, {"_id": 0})
+    if not req:
+        raise HTTPException(status_code=404, detail="Removal request not found")
+    if req.get("status") != "pending":
+        raise HTTPException(status_code=400, detail="Request already reviewed")
+
+    decision = data.decision.strip().lower()
+    if decision not in ["approved", "rejected"]:
+        raise HTTPException(status_code=400, detail="Decision must be approved or rejected")
+
+    requester = await db.users.find_one({"id": req["requested_by"]}, {"_id": 0, "id": 1})
+    target_user = await db.users.find_one({"id": req["target_user_id"]}, {"_id": 0, "id": 1, "role": 1, "name": 1})
+
+    if decision == "approved":
+        if target_user:
+            if target_user.get("role") == "admin":
+                raise HTTPException(status_code=400, detail="Cannot delete admin user")
+            await delete_user_and_related(target_user["id"])
+            await db.events.update_many({"created_by": target_user["id"]}, {"$set": {"created_by": "deleted-user"}})
+
+    update_doc = {
+        "status": decision,
+        "admin_note": (data.admin_note or "").strip(),
+        "reviewed_by": current_user["user_id"],
+        "reviewed_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.user_removal_requests.update_one({"id": request_id}, {"$set": update_doc})
+    updated = await db.user_removal_requests.find_one({"id": request_id}, {"_id": 0})
+    if not updated:
+        raise HTTPException(status_code=404, detail="Removal request not found after update")
+
+    if requester:
+        notif = Notification(
+            user_id=requester["id"],
+            title="Removal Request Reviewed",
+            message=f"Your request for {req['target_user_name']} was {decision}.",
+            type="info" if decision == "rejected" else "success",
+        )
+        notif_doc = notif.model_dump()
+        notif_doc["created_at"] = notif_doc["created_at"].isoformat()
+        await db.notifications.insert_one(notif_doc)
+
+    if isinstance(updated.get("created_at"), str):
+        updated["created_at"] = datetime.fromisoformat(updated["created_at"])
+    if updated.get("reviewed_at") and isinstance(updated.get("reviewed_at"), str):
+        updated["reviewed_at"] = datetime.fromisoformat(updated["reviewed_at"])
+    return UserRemovalRequest(**updated)
 
 @api_router.get("/events/{event_id}/venue-conflict", response_model=VenueConflictResult)
 async def check_venue_conflict(event_id: str):

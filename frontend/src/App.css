@@ -34,9 +34,92 @@ body {
   color: var(--text-main);
 }
 
+main#main-content {
+  animation: pageReveal 420ms ease-out both;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', sans-serif;
   letter-spacing: -0.02em;
+}
+
+.app-loader-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(30, 200, 255, 0.16), transparent 42%),
+    radial-gradient(circle at 84% 12%, rgba(11, 99, 243, 0.2), transparent 36%),
+    var(--app-bg);
+}
+
+.loader-ambient {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(34px);
+  opacity: 0.7;
+}
+
+.loader-ambient-a {
+  width: 14rem;
+  height: 14rem;
+  top: 14%;
+  left: 8%;
+  background: rgba(56, 189, 248, 0.34);
+  animation: driftA 4s ease-in-out infinite;
+}
+
+.loader-ambient-b {
+  width: 16rem;
+  height: 16rem;
+  right: 10%;
+  bottom: 14%;
+  background: rgba(37, 99, 235, 0.3);
+  animation: driftB 5s ease-in-out infinite;
+}
+
+.loader-core {
+  width: 88px;
+  height: 88px;
+  border-radius: 9999px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--card-bg) 72%, transparent);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(8px);
+}
+
+.loader-orbit {
+  width: 62px;
+  height: 62px;
+  border-radius: 9999px;
+  border: 3px solid rgba(11, 99, 243, 0.2);
+  border-top-color: #0b63f3;
+  animation: spin 900ms linear infinite;
+}
+
+.loader-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #0b63f3, #22d3ee);
+  position: absolute;
+  box-shadow: 0 0 0 8px rgba(11, 99, 243, 0.12);
+  animation: pulseDot 1.5s ease-in-out infinite;
+}
+
+.loader-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
 }
 
 .glass-effect {
@@ -61,6 +144,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--border-soft);
+  animation: cardReveal 480ms ease-out both;
 }
 
 .event-card::before {
@@ -134,6 +218,7 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-soft);
   border: 1px solid var(--border-soft);
   transition: all 0.3s ease;
+  animation: cardReveal 500ms ease-out both;
 }
 
 .stat-card:hover {
@@ -153,6 +238,7 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-soft);
   border-radius: 1rem;
   box-shadow: var(--shadow-soft);
+  animation: cardReveal 520ms ease-out both;
 }
 
 .sidebar-modern {
@@ -476,6 +562,35 @@ h1, h2, h3, h4, h5, h6 {
   background-position: center;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(0.95); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes driftA {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(14px, -12px); }
+}
+
+@keyframes driftB {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-12px, 10px); }
+}
+
+@keyframes pageReveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .skip-link {
   position: fixed;
   left: 0.75rem;
@@ -507,5 +622,14 @@ textarea:focus-visible {
     padding: 0.75rem 1.1rem;
     bottom: 1.25rem;
     right: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -135,7 +135,12 @@ export default function TimetableManager({ canEdit = false, compact = false }) {
                 <option key={day} value={day}>{day}</option>
               ))}
             </select>
-            <input value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} placeholder="09:00 - 11:00" className="px-3 py-2 rounded-lg border border-gray-200" />
+            <input
+              type="time"
+              value={form.time}
+              onChange={(e) => setForm({ ...form, time: e.target.value })}
+              className="px-3 py-2 rounded-lg border border-gray-200"
+            />
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Session title" className="px-3 py-2 rounded-lg border border-gray-200" />
             <input value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} placeholder="Venue" className="px-3 py-2 rounded-lg border border-gray-200" />
             <input value={form.instructor} onChange={(e) => setForm({ ...form, instructor: e.target.value })} placeholder="Instructor" className="px-3 py-2 rounded-lg border border-gray-200" />

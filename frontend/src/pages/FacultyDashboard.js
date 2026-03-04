@@ -16,6 +16,7 @@ import {
   Megaphone,
   BarChart3,
   Search,
+  UserX,
   X,
   UserCheck
 } from 'lucide-react';
@@ -42,6 +43,11 @@ export default function FacultyDashboard({ user, onLogout }) {
   const [attendanceInsights, setAttendanceInsights] = useState([]);
   const [globalQuery, setGlobalQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
+  const [myRemovalRequests, setMyRemovalRequests] = useState([]);
+  const [removalRequestForm, setRemovalRequestForm] = useState({
+    target_user_email: '',
+    reason: '',
+  });
   const [announcementForm, setAnnouncementForm] = useState({
     title: '',
     message: '',
@@ -78,14 +84,16 @@ export default function FacultyDashboard({ user, onLogout }) {
       setAllEvents(eventsData);
       setStats(statsData);
       try {
-        const [annData, analyticsData, insightsData] = await Promise.all([
+        const [annData, analyticsData, insightsData, requestData] = await Promise.all([
           cachedGet('/announcements'),
           cachedGet('/dashboard/analytics'),
           cachedGet('/attendance/insights'),
+          cachedGet('/user-removal-requests'),
         ]);
         setAnnouncements(annData);
         setAnalytics(analyticsData);
         setAttendanceInsights(insightsData);
+        setMyRemovalRequests(requestData);
       } catch (extraError) {
         console.error('Advanced modules unavailable', extraError);
       }
@@ -273,10 +281,36 @@ export default function FacultyDashboard({ user, onLogout }) {
     }
   };
 
+  const submitRemovalRequest = async (e) => {
+    e.preventDefault();
+    if (!removalRequestForm.target_user_email.trim()) {
+      toast.error('Enter user email for removal request');
+      return;
+    }
+    try {
+      await api.post('/user-removal-requests', {
+        target_user_email: removalRequestForm.target_user_email.trim(),
+        reason: removalRequestForm.reason.trim(),
+      });
+      toast.success('Removal request sent to admin');
+      setRemovalRequestForm({ target_user_email: '', reason: '' });
+      clearApiCache();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to submit request');
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50">
-        <div className="animate-pulse text-indigo-900 font-semibold text-xl">Loading...</div>
+      <div className="app-loader-screen">
+        <div className="loader-ambient loader-ambient-a" />
+        <div className="loader-ambient loader-ambient-b" />
+        <div className="loader-core">
+          <div className="loader-orbit" />
+          <div className="loader-dot" />
+        </div>
+        <p className="loader-label">Loading faculty workspace...</p>
       </div>
     );
   }
@@ -784,6 +818,52 @@ export default function FacultyDashboard({ user, onLogout }) {
                 </div>
               </section>
             </div>
+
+            <section className="dashboard-surface p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <UserX className="w-5 h-5 text-indigo-900" />
+                <h3 className="text-xl font-bold text-gray-900">Request User Removal</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-3">
+                Faculty cannot remove users directly. Submit request, admin will review and decide.
+              </p>
+              <form onSubmit={submitRemovalRequest} className="grid md:grid-cols-3 gap-3">
+                <input
+                  type="email"
+                  value={removalRequestForm.target_user_email}
+                  onChange={(e) => setRemovalRequestForm({ ...removalRequestForm, target_user_email: e.target.value })}
+                  placeholder="Student/Faculty email"
+                  className="px-3 py-2 rounded-lg border border-gray-200"
+                  required
+                />
+                <input
+                  value={removalRequestForm.reason}
+                  onChange={(e) => setRemovalRequestForm({ ...removalRequestForm, reason: e.target.value })}
+                  placeholder="Reason for removal"
+                  className="md:col-span-2 px-3 py-2 rounded-lg border border-gray-200"
+                />
+                <button type="submit" className="btn-primary px-4 py-2 rounded-lg w-fit">
+                  Send Request
+                </button>
+              </form>
+              <div className="mt-4 space-y-2 max-h-56 overflow-y-auto scroll-container">
+                {myRemovalRequests.length === 0 ? (
+                  <p className="text-sm text-gray-500">No requests submitted.</p>
+                ) : (
+                  myRemovalRequests.map((req) => (
+                    <div key={req.id} className="p-3 rounded-lg border border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {req.target_user_name} ({req.target_user_email})
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">Reason: {req.reason || 'No reason provided'}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Status: <span className="font-semibold capitalize">{req.status}</span>
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
 
             <div className="grid lg:grid-cols-2 gap-6">
               <section className="dashboard-surface p-5">

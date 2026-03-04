@@ -17,6 +17,8 @@ import {
   BarChart3,
   Download,
   Search,
+  UserPlus,
+  UserX,
   Sparkles,
   X
 } from 'lucide-react';
@@ -47,6 +49,15 @@ export default function AdminDashboard({ user, onLogout }) {
     message: '',
     target_roles: [],
     target_departments: [],
+  });
+  const [removalRequests, setRemovalRequests] = useState([]);
+  const [newUserForm, setNewUserForm] = useState({
+    name: '',
+    email: '',
+    role: 'student',
+    password: '',
+    department: '',
+    student_id: '',
   });
   const [programForm, setProgramForm] = useState({
     title: '',
@@ -97,14 +108,16 @@ export default function AdminDashboard({ user, onLogout }) {
       setUsers(usersData);
       setStats(statsData);
       try {
-        const [annData, analyticsData, insightsData] = await Promise.all([
+        const [annData, analyticsData, insightsData, removalReqData] = await Promise.all([
           cachedGet('/announcements'),
           cachedGet('/dashboard/analytics'),
           cachedGet('/attendance/insights'),
+          cachedGet('/user-removal-requests'),
         ]);
         setAnnouncements(annData);
         setAnalytics(analyticsData);
         setAttendanceInsights(insightsData);
+        setRemovalRequests(removalReqData);
       } catch (extraError) {
         console.error('Advanced modules unavailable', extraError);
       }
@@ -237,6 +250,49 @@ export default function AdminDashboard({ user, onLogout }) {
     toast.success('Instructor removed');
   };
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post('/users', newUserForm);
+      toast.success('User created successfully');
+      setNewUserForm({
+        name: '',
+        email: '',
+        role: 'student',
+        password: '',
+        department: '',
+        student_id: '',
+      });
+      clearApiCache();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to create user');
+    }
+  };
+
+  const handleDeleteUser = async (targetUser) => {
+    if (!window.confirm(`Delete user ${targetUser.name}?`)) return;
+    try {
+      await api.delete(`/users/${targetUser.id}`);
+      toast.success('User removed');
+      clearApiCache();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to remove user');
+    }
+  };
+
+  const handleReviewRemovalRequest = async (requestId, decision) => {
+    try {
+      await api.put(`/user-removal-requests/${requestId}`, { decision });
+      toast.success(`Request ${decision}`);
+      clearApiCache();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update request');
+    }
+  };
+
   const toggleRoleTarget = (role) => {
     setAnnouncementForm((prev) => ({
       ...prev,
@@ -297,8 +353,14 @@ export default function AdminDashboard({ user, onLogout }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50">
-        <div className="animate-pulse text-indigo-900 font-semibold text-xl">Loading...</div>
+      <div className="app-loader-screen">
+        <div className="loader-ambient loader-ambient-a" />
+        <div className="loader-ambient loader-ambient-b" />
+        <div className="loader-core">
+          <div className="loader-orbit" />
+          <div className="loader-dot" />
+        </div>
+        <p className="loader-label">Loading admin control center...</p>
       </div>
     );
   }
@@ -650,6 +712,62 @@ export default function AdminDashboard({ user, onLogout }) {
               <p className="text-gray-600 mt-2">{users.length} registered users</p>
             </div>
 
+            <section className="dashboard-surface p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <UserPlus className="w-5 h-5 text-indigo-900" />
+                <h3 className="text-xl font-bold text-gray-900">Add User / Faculty</h3>
+              </div>
+              <form onSubmit={handleCreateUser} className="grid md:grid-cols-3 gap-3">
+                <input
+                  value={newUserForm.name}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, name: e.target.value })}
+                  placeholder="Full name"
+                  className="px-3 py-2 rounded-lg border border-gray-200"
+                  required
+                />
+                <input
+                  type="email"
+                  value={newUserForm.email}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                  placeholder="Email"
+                  className="px-3 py-2 rounded-lg border border-gray-200"
+                  required
+                />
+                <input
+                  type="password"
+                  value={newUserForm.password}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, password: e.target.value })}
+                  placeholder="Temporary password"
+                  className="px-3 py-2 rounded-lg border border-gray-200"
+                  required
+                />
+                <select
+                  value={newUserForm.role}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value })}
+                  className="px-3 py-2 rounded-lg border border-gray-200"
+                >
+                  <option value="student">Student</option>
+                  <option value="faculty">Faculty</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <input
+                  value={newUserForm.department}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, department: e.target.value })}
+                  placeholder="Department"
+                  className="px-3 py-2 rounded-lg border border-gray-200"
+                />
+                <input
+                  value={newUserForm.student_id}
+                  onChange={(e) => setNewUserForm({ ...newUserForm, student_id: e.target.value })}
+                  placeholder="Student ID (optional)"
+                  className="px-3 py-2 rounded-lg border border-gray-200"
+                />
+                <button type="submit" className="md:col-span-3 btn-primary px-5 py-2 rounded-lg w-fit">
+                  Create User
+                </button>
+              </form>
+            </section>
+
             <div className="dashboard-surface overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -660,6 +778,7 @@ export default function AdminDashboard({ user, onLogout }) {
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wide">Role</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wide">Department</th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wide">Joined</th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 uppercase tracking-wide">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -684,12 +803,61 @@ export default function AdminDashboard({ user, onLogout }) {
                         <td className="px-6 py-4 text-sm text-gray-600">
                           {new Date(u.created_at).toLocaleDateString()}
                         </td>
+                        <td className="px-6 py-4 text-right">
+                          {u.id !== user.id && u.role !== 'admin' ? (
+                            <button
+                              onClick={() => handleDeleteUser(u)}
+                              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 text-sm font-medium"
+                            >
+                              <UserX className="w-4 h-4" />
+                              Remove
+                            </button>
+                          ) : (
+                            <span className="text-xs text-gray-400">Protected</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
+
+            <section className="dashboard-surface p-5">
+              <h3 className="text-xl font-bold text-gray-900">Faculty Removal Requests</h3>
+              <p className="text-sm text-gray-600 mt-1">Faculty can request removal. Admin reviews and decides.</p>
+              <div className="mt-4 space-y-3 max-h-80 overflow-y-auto scroll-container">
+                {removalRequests.length === 0 ? (
+                  <p className="text-sm text-gray-500">No requests yet.</p>
+                ) : (
+                  removalRequests.map((req) => (
+                    <div key={req.id} className="p-3 rounded-lg border border-gray-200">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {req.requested_by_name} requested removal of {req.target_user_name} ({req.target_user_role})
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">Reason: {req.reason || 'No reason provided'}</p>
+                      <p className="text-xs text-gray-500 mt-1">Status: <span className="font-semibold capitalize">{req.status}</span></p>
+                      {req.status === 'pending' && (
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            onClick={() => handleReviewRemovalRequest(req.id, 'approved')}
+                            className="px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-semibold hover:bg-green-500"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleReviewRemovalRequest(req.id, 'rejected')}
+                            className="px-3 py-1.5 rounded-lg bg-gray-700 text-white text-xs font-semibold hover:bg-gray-600"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
           </div>
         )}
 

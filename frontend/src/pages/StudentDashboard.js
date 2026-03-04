@@ -283,8 +283,14 @@ export default function StudentDashboard({ user, onLogout }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50">
-        <div className="animate-pulse text-indigo-900 font-semibold text-xl">Loading...</div>
+      <div className="app-loader-screen">
+        <div className="loader-ambient loader-ambient-a" />
+        <div className="loader-ambient loader-ambient-b" />
+        <div className="loader-core">
+          <div className="loader-orbit" />
+          <div className="loader-dot" />
+        </div>
+        <p className="loader-label">Loading student dashboard...</p>
       </div>
     );
   }
