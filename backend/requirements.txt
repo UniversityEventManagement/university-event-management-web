@@ -18,7 +18,7 @@ dnspython==2.8.0
 ecdsa==0.19.1
 email-validator==2.3.0
 fastapi==0.110.1
-fastuuid==0.14.0
+fastuuid==0.14.0W
 filelock==3.20.3
 flake8==7.3.0
 frozenlist==1.8.0

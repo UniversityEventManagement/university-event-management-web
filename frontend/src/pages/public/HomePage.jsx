@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
 import { CalendarDays, GraduationCap, Layers, Sparkles, Users } from 'lucide-react';
 
+const heroImages = ['/img/annual-fest.jpg', '/img/workshop.jpg', '/img/technical.jpeg'];
+const boardImages = ['/img/cultural.jpg', '/img/sports.jpg', '/img/other.jpg'];
+
 const highlights = [
   { icon: CalendarDays, title: 'Event Operations', text: 'Plan seminars, festivals, workshops, and registrations in one place.' },
   { icon: GraduationCap, title: 'Workshop Programs', text: 'Run training programs and workshops linked to campus events.' },
@@ -39,15 +42,15 @@ export default function HomePage() {
           <div className="grid grid-cols-2 gap-3">
             <div
               className="rounded-2xl min-h-44 bg-cover bg-center border border-white/25"
-              style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80)' }}
+              style={{ backgroundImage: `url(${heroImages[0]})` }}
             />
             <div
               className="rounded-2xl min-h-44 bg-cover bg-center border border-white/25"
-              style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80)' }}
+              style={{ backgroundImage: `url(${heroImages[1]})` }}
             />
             <div
               className="rounded-2xl min-h-44 bg-cover bg-center border border-white/25"
-              style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80)' }}
+              style={{ backgroundImage: `url(${heroImages[2]})` }}
             />
             <div className="rounded-2xl bg-white/15 border border-white/25 p-4 flex flex-col justify-center">
               <p className="text-sm uppercase tracking-wide text-indigo-100">Live Impact</p>
@@ -108,9 +111,7 @@ export default function HomePage() {
           <p className="mt-2 text-gray-600">Highlight upcoming festivals, innovation sprints, and AI showcases.</p>
           <div className="mt-5 grid sm:grid-cols-3 gap-3">
             {[
-              'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80',
-              'https://images.unsplash.com/photo-1515169067868-5387ec356754?auto=format&fit=crop&w=900&q=80',
-              'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=900&q=80',
+              ...boardImages,
             ].map((img, i) => (
               <div key={i} className="h-32 rounded-xl bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
             ))}

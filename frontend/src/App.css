@@ -132,7 +132,6 @@ h1, h2, h3, h4, h5, h6 {
   --p-load: 0;
   --ring-size: 7.5rem;
   --ring-thickness: 0.72rem;
-  counter-reset: p var(--p-load);
   width: var(--ring-size);
   aspect-ratio: 1;
   display: grid;
@@ -168,7 +167,7 @@ h1, h2, h3, h4, h5, h6 {
   background-clip: text;
   color: transparent;
   mix-blend-mode: normal;
-  content: counter(p) "%";
+  content: attr(data-progress-label);
 }
 
 .load.is-indeterminate {
@@ -604,31 +603,18 @@ h1, h2, h3, h4, h5, h6 {
 
 .login-scene {
   position: relative;
-  background:
-    linear-gradient(120deg, rgba(238, 246, 255, 0.94), rgba(219, 239, 255, 0.86)),
-    url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(120deg, rgba(238, 246, 255, 0.94), rgba(219, 239, 255, 0.86));
 }
 
 .home-hero {
   position: relative;
   overflow: hidden;
   border-color: rgba(255, 255, 255, 0.4) !important;
-  background:
-    linear-gradient(120deg, rgba(6, 47, 106, 0.82), rgba(2, 105, 183, 0.75)),
-    url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(120deg, rgba(6, 47, 106, 0.82), rgba(2, 105, 183, 0.75));
 }
 
 .dark .login-scene {
-  background:
-    linear-gradient(125deg, rgba(3, 18, 38, 0.86), rgba(5, 40, 82, 0.74)),
-    url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(125deg, rgba(3, 18, 38, 0.86), rgba(5, 40, 82, 0.74));
 }
 
 @keyframes spin {

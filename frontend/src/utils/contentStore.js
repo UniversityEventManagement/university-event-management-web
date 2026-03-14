@@ -10,8 +10,7 @@ const defaultPrograms = [
     seats: 90,
     duration: '12 Weeks',
     summary: 'Build real-world ML pipelines and deploy LLM-powered tools.',
-    image:
-      'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80',
+    image: '/img/technical.jpeg',
   },
   {
     id: 'prog-ai-2',
@@ -21,8 +20,7 @@ const defaultPrograms = [
     seats: 75,
     duration: '8 Weeks',
     summary: 'Prototype AI-first products from user research to launch plan.',
-    image:
-      'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1200&q=80',
+    image: '/img/workshop.jpg',
   },
   {
     id: 'prog-ai-3',
@@ -32,8 +30,7 @@ const defaultPrograms = [
     seats: 130,
     duration: '6 Weeks',
     summary: 'Use analytics and AI dashboards for strategic campus decisions.',
-    image:
-      'https://images.unsplash.com/photo-1551281044-8d8d0f67c3d1?auto=format&fit=crop&w=1200&q=80',
+    image: '/img/cultural.jpg',
   },
 ];
 
@@ -44,8 +41,7 @@ const defaultInstructors = [
     dept: 'CSE',
     expertise: 'Machine Learning, NLP',
     rating: 4.9,
-    image:
-      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
+    image: '/img/annual-fest.jpg',
   },
   {
     id: 'ins-2',
@@ -53,8 +49,7 @@ const defaultInstructors = [
     dept: 'IT',
     expertise: 'AI Product Engineering',
     rating: 4.8,
-    image:
-      'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=80',
+    image: '/img/workshop.jpg',
   },
   {
     id: 'ins-3',
@@ -62,10 +57,25 @@ const defaultInstructors = [
     dept: 'MBA',
     expertise: 'Innovation Strategy, Leadership',
     rating: 4.8,
-    image:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
+    image: '/img/other.jpg',
   },
 ];
+
+const isRemoteImage = (value) => /^https?:\/\//i.test(String(value || '').trim());
+
+const normalizeProgram = (program, index) => ({
+  ...program,
+  image: !isRemoteImage(program?.image)
+    ? program?.image || defaultPrograms[index % defaultPrograms.length].image
+    : defaultPrograms[index % defaultPrograms.length].image,
+});
+
+const normalizeInstructor = (instructor, index) => ({
+  ...instructor,
+  image: !isRemoteImage(instructor?.image)
+    ? instructor?.image || defaultInstructors[index % defaultInstructors.length].image
+    : defaultInstructors[index % defaultInstructors.length].image,
+});
 
 function safeRead(key, fallback) {
   try {
@@ -77,7 +87,7 @@ function safeRead(key, fallback) {
 }
 
 export function getPrograms() {
-  return safeRead(programsKey, defaultPrograms);
+  return safeRead(programsKey, defaultPrograms).map(normalizeProgram);
 }
 
 export function savePrograms(programs) {
@@ -85,7 +95,7 @@ export function savePrograms(programs) {
 }
 
 export function getInstructors() {
-  return safeRead(instructorsKey, defaultInstructors);
+  return safeRead(instructorsKey, defaultInstructors).map(normalizeInstructor);
 }
 
 export function saveInstructors(instructors) {

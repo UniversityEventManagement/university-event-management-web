@@ -16,9 +16,12 @@ export default function InstructorsPage() {
         {instructors.map((ins) => (
           <article key={ins.id || ins.name} className="dashboard-surface p-5 flex gap-4 items-start">
             <img
-              src={ins.image || 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=300&q=80'}
+              src={ins.image || '/img/other.jpg'}
               alt={ins.name}
               className="w-20 h-20 rounded-xl object-cover border border-gray-200"
+              onError={(event) => {
+                event.currentTarget.src = '/img/other.jpg';
+              }}
             />
             <div>
             <h2 className="text-xl font-bold text-gray-900">{ins.name}</h2>

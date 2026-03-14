@@ -18,7 +18,7 @@ export default function ProgramsPage() {
             <div
               className="h-36 rounded-xl mb-4 bg-cover bg-center"
               style={{
-                backgroundImage: `url(${program.image || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=1200&q=80'})`,
+                backgroundImage: `url(${program.image || '/img/other.jpg'})`,
               }}
             />
             <h2 className="text-xl font-bold text-gray-900">{program.title}</h2>

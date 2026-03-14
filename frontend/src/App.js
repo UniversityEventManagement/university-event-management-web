@@ -23,6 +23,7 @@ function AppLoader({ progress = null, label = 'Preparing CampusHub...' }) {
   const safeProgress = typeof progress === 'number'
     ? Math.max(0, Math.min(100, Math.round(progress)))
     : null;
+  const progressLabel = safeProgress === null ? 'Loading' : `${safeProgress}%`;
 
   return (
     <div className="app-loader-screen">
@@ -31,6 +32,7 @@ function AppLoader({ progress = null, label = 'Preparing CampusHub...' }) {
       <div
         className={`load ${safeProgress === null ? 'is-indeterminate' : 'is-determinate'}`}
         aria-label="Loading progress"
+        data-progress-label={progressLabel}
         style={safeProgress === null ? undefined : { '--p-load': safeProgress }}
       />
       <p className="loader-label">

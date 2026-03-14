@@ -49,27 +49,63 @@ export default function StudentDashboard({ user, onLogout }) {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      const [eventsData, regsData, notifsData, statsData, meData, leaderboardData] = await Promise.all([
+      const results = await Promise.allSettled([
         cachedGet('/events/recommended'),
+        cachedGet('/events'),
         cachedGet('/registrations/my'),
         cachedGet('/notifications'),
         cachedGet('/dashboard/stats'),
         cachedGet('/auth/me'),
         cachedGet('/leaderboard', { params: { limit: 5 } }),
       ]);
-      setEvents(eventsData);
-      setMyRegistrations(regsData);
-      setNotifications(notifsData);
-      setStats(statsData);
-      setProfile(meData);
-      setInterests(meData.interests || []);
-      setLeaderboard(leaderboardData);
+
+      const [
+        recommendedEventsResult,
+        allEventsResult,
+        regsResult,
+        notifsResult,
+        statsResult,
+        meResult,
+        leaderboardResult,
+      ] = results;
+
+      const recommendedEvents = recommendedEventsResult.status === 'fulfilled' ? recommendedEventsResult.value : [];
+      const allEvents = allEventsResult.status === 'fulfilled' ? allEventsResult.value : [];
+      const mergedEvents = [...recommendedEvents, ...allEvents].filter(
+        (event, index, arr) => arr.findIndex((item) => item.id === event.id) === index
+      );
+
+      setEvents(mergedEvents);
+      setMyRegistrations(regsResult.status === 'fulfilled' ? regsResult.value : []);
+      setNotifications(notifsResult.status === 'fulfilled' ? notifsResult.value : []);
+      setStats(
+        statsResult.status === 'fulfilled'
+          ? statsResult.value
+          : { total_events: 0, upcoming_events: 0, total_registrations: 0, total_users: 0 }
+      );
+
+      if (meResult.status === 'fulfilled') {
+        setProfile(meResult.value);
+        setInterests(meResult.value.interests || []);
+      }
+
+      setLeaderboard(leaderboardResult.status === 'fulfilled' ? leaderboardResult.value : []);
+
       try {
         const annData = await cachedGet('/announcements');
         setAnnouncements(annData);
       } catch (announcementError) {
         console.error('Announcements unavailable', announcementError);
+        setAnnouncements([]);
+      }
+
+      const failedCount = results.filter((result) => result.status === 'rejected').length;
+      if (failedCount === results.length || meResult.status === 'rejected') {
+        toast.error('Failed to load dashboard data');
+      } else if (failedCount > 0) {
+        toast.error('Some dashboard data could not be loaded');
       }
     } catch (error) {
       toast.error('Failed to load dashboard data');
@@ -286,7 +322,7 @@ export default function StudentDashboard({ user, onLogout }) {
       <div className="app-loader-screen">
         <div className="loader-ambient loader-ambient-a" />
         <div className="loader-ambient loader-ambient-b" />
-        <div className="load" aria-label="Loading progress" />
+        <div className="load is-indeterminate" aria-label="Loading progress" data-progress-label="Loading" />
         <p className="loader-label">Loading student dashboard...</p>
       </div>
     );
